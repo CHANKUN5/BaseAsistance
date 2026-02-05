@@ -1,0 +1,189 @@
+/* Dashboard Page Styles */
+
+.dashboard__actions {
+    display: flex;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+    justify-content: flex-end;
+}
+
+/* Stats Row */
+.dashboard__stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+/* Main Grid */
+.dashboard__grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: var(--space-4);
+}
+
+.dashboard__column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.dashboard__column--wide {
+    grid-column: span 1;
+}
+
+/* Reminders Card */
+.dashboard__reminders {
+    background-color: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+}
+
+.dashboard__card-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-900);
+    margin: 0 0 var(--space-4);
+}
+
+.dashboard__reminder-content {
+    text-align: center;
+}
+
+.dashboard__meeting-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-900);
+    margin: 0 0 var(--space-2);
+}
+
+.dashboard__meeting-time {
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-500);
+    margin: 0 0 var(--space-4);
+}
+
+/* Project List */
+.dashboard__project-list {
+    background-color: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    box-shadow: var(--shadow-sm);
+}
+
+.dashboard__project-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-4);
+}
+
+.dashboard__project-header .dashboard__card-title {
+    margin: 0;
+}
+
+.dashboard__projects {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.dashboard__project-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) 0;
+}
+
+.dashboard__project-icon {
+    font-size: var(--font-size-xl);
+}
+
+.dashboard__project-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.dashboard__project-name {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-neutral-900);
+}
+
+.dashboard__project-date {
+    font-size: var(--font-size-xs);
+    color: var(--color-neutral-500);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .dashboard__stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard__grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .dashboard__column--wide {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard__actions {
+        flex-direction: column;
+    }
+
+    .dashboard__stats {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard__column--wide {
+        grid-column: span 1;
+    }
+}.stats-s
+keleton {
+    background-color: var(--color-white);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.skeleton-title,
+.skeleton-value,
+.skeleton-subtitle {
+    background: linear-gradient(90deg, var(--color-neutral-200) 25%, var(--color-neutral-100) 50%, var(--color-neutral-200) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+}
+
+.skeleton-title {
+    height: 16px;
+    width: 60%;
+}
+
+.skeleton-value {
+    height: 24px;
+    width: 80%;
+}
+
+.skeleton-subtitle {
+    height: 14px;
+    width: 70%;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}

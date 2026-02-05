@@ -1,0 +1,110 @@
+/* Loading Component Styles */
+
+/* Spinner */
+.loading-spinner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-spinner__circle {
+    border-radius: 50%;
+    border: 2px solid var(--color-neutral-200);
+    border-top-color: var(--color-primary-600);
+    animation: spin 0.8s linear infinite;
+}
+
+.loading-spinner--small .loading-spinner__circle {
+    width: 16px;
+    height: 16px;
+}
+
+.loading-spinner--medium .loading-spinner__circle {
+    width: 24px;
+    height: 24px;
+    border-width: 3px;
+}
+
+.loading-spinner--large .loading-spinner__circle {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Skeleton */
+.skeleton {
+    background: linear-gradient(90deg,
+            var(--color-neutral-200) 25%,
+            var(--color-neutral-100) 50%,
+            var(--color-neutral-200) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.skeleton--text {
+    border-radius: var(--radius-sm);
+}
+
+.skeleton--circle {
+    border-radius: 50%;
+}
+
+.skeleton--rect {
+    border-radius: var(--radius-md);
+}
+
+.skeleton--card {
+    border-radius: var(--radius-xl);
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+}
+
+.loading-overlay__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.loading-overlay__message {
+    font-size: var(--font-size-lg);
+    color: var(--color-neutral-600);
+    margin: 0;
+}
+
+/* Protected Route Loading */
+.protected-route-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--bg-body);
+}

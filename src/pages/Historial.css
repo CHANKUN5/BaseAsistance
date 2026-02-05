@@ -1,0 +1,202 @@
+.historial-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.historial-stats {
+    margin-bottom: var(--space-4);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-4);
+}
+
+.stat-card {
+    text-align: center;
+    padding: var(--space-6);
+}
+
+.stat-value {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary-700);
+    margin-bottom: var(--space-2);
+}
+
+.stat-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-500);
+    font-weight: var(--font-weight-medium);
+}
+
+.historial-table-card {
+    padding: 0;
+    overflow: hidden;
+}
+
+.table-header {
+    padding: var(--space-6);
+    border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.table-header h3 {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    color: var(--color-neutral-900);
+}
+
+.historial-table-container {
+    overflow-x: auto;
+}
+
+.historial-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.historial-table th {
+    background-color: var(--color-neutral-50);
+    padding: var(--space-4) var(--space-6);
+    text-align: left;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-700);
+    font-size: var(--font-size-sm);
+    border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.historial-table td {
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--color-neutral-100);
+    vertical-align: middle;
+}
+
+.historial-table tbody tr:hover {
+    background-color: var(--color-neutral-50);
+}
+
+.fecha-cell {
+    min-width: 150px;
+}
+
+.fecha-display {
+    display: flex;
+    flex-direction: column;
+}
+
+.fecha-principal {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-900);
+}
+
+.fecha-secundaria {
+    font-size: var(--font-size-xs);
+    color: var(--color-neutral-500);
+    text-transform: capitalize;
+}
+
+.duracion-cell {
+    text-align: center;
+}
+
+.duracion-badge {
+    background-color: var(--color-primary-100);
+    color: var(--color-primary-700);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+}
+
+.estado-badge {
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    text-transform: capitalize;
+}
+
+.estado-badge--success {
+    background-color: var(--color-success-light);
+    color: var(--color-success);
+}
+
+.estado-badge--primary {
+    background-color: var(--color-primary-100);
+    color: var(--color-primary-700);
+}
+
+.estado-badge--warning {
+    background-color: var(--color-warning-light);
+    color: var(--color-warning);
+}
+
+.estado-badge--neutral {
+    background-color: var(--color-neutral-100);
+    color: var(--color-neutral-600);
+}
+
+.historial-loading {
+    padding: var(--space-6);
+}
+
+.loading-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.skeleton-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: var(--space-4);
+    align-items: center;
+}
+
+.skeleton-item {
+    height: 20px;
+    background: linear-gradient(90deg, var(--color-neutral-200) 25%, var(--color-neutral-100) 50%, var(--color-neutral-200) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+}
+
+.skeleton-date { width: 100%; }
+.skeleton-time { width: 80%; }
+.skeleton-duration { width: 60%; }
+.skeleton-status { width: 70%; }
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .historial-table {
+        font-size: var(--font-size-sm);
+    }
+    
+    .historial-table th,
+    .historial-table td {
+        padding: var(--space-3) var(--space-4);
+    }
+    
+    .fecha-display {
+        gap: var(--space-1);
+    }
+}.empt
+y-state {
+    padding: var(--space-8);
+    text-align: center;
+    color: var(--color-neutral-500);
+}
+
+.empty-state p {
+    margin: var(--space-2) 0;
+}

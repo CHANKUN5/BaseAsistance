@@ -1,0 +1,34 @@
+/* ProjectAnalytics Component Styles */
+
+.project-analytics {
+    min-height: 280px;
+}
+
+.project-analytics__header {
+    margin-bottom: var(--space-4);
+}
+
+.project-analytics__title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-900);
+    margin: 0;
+}
+
+.project-analytics__chart {
+    width: 100%;
+}
+
+.project-analytics__tooltip {
+    background-color: var(--color-neutral-900);
+    color: var(--color-white);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+}.p
+roject-analytics__subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-neutral-500);
+    margin: 0;
+}
