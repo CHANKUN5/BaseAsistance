@@ -1,183 +1,397 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/layout';
-import {
-    StatsCard,
-    ProjectAnalytics,
-    TimeTracker,
-    ProjectProgress,
-    TeamCollaboration
-} from '../components/dashboard';
-import { Button } from '../components/common';
+import { Card, Button } from '../components/common';
+import Modal from '../components/common/Modal';
 import { useAuth } from '../context/AuthContext';
-import * as metricasService from '../services/metricasService';
+import * as jornadasService from '../services/jornadasService';
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts';
+import { Play, Pause, Square, Utensils, Coffee, Clock } from 'lucide-react';
 import './Dashboard.css';
-
-const PROJECTS = [
-    { id: 1, name: 'Develop API Endpoints', dueDate: 'Nov 26, 2024', icon: '🔷' },
-    { id: 2, name: 'Onboarding Flow', dueDate: 'Nov 28, 2024', icon: '🔶' },
-    { id: 3, name: 'Build Dashboard', dueDate: 'Nov 30, 2024', icon: '🔷' },
-    { id: 4, name: 'Optimize Page Load', dueDate: 'Dec 5, 2024', icon: '🟢' },
-    { id: 5, name: 'Cross-Browser Testing', dueDate: 'Dec 6, 2024', icon: '🟣' }
-];
-
-const PlusIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-);
 
 export default function Dashboard() {
     const { user } = useAuth();
-    const [metricas, setMetricas] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [jornadaActual, setJornadaActual] = useState(null);
+    const [tiempoTranscurrido, setTiempoTranscurrido] = useState('00:00:00');
+    const [loading, setLoading] = useState(false);
+    const [weeklyData, setWeeklyData] = useState([]);
+    const [historyData, setHistoryData] = useState([]);
+
+    // Modal State
+    const [modalConfig, setModalConfig] = useState({
+        isOpen: false,
+        title: '',
+        content: null,
+        footer: null
+    });
 
     useEffect(() => {
-        loadMetricas();
+        if (user) {
+            loadJornadaActiva();
+            loadDashboardData();
+        }
     }, [user]);
 
-    const loadMetricas = async () => {
+    const parseDurationToHours = (durationStr) => {
+        if (!durationStr) return 0;
+
+        // Handle "HH:MM:SS"
+        if (durationStr.includes(':')) {
+            const parts = durationStr.split(':');
+            const h = parseInt(parts[0], 10) || 0;
+            const m = parseInt(parts[1], 10) || 0;
+            return h + (m / 60);
+        }
+
+        // Handle "X hours"
+        const match = durationStr.match(/(\d+)\s*hours?/);
+        if (match) {
+            return parseInt(match[1], 10);
+        }
+
+        return 0;
+    };
+
+    const loadDashboardData = async () => {
+        try {
+            const { data, error } = await jornadasService.getHistorialJornadas(user.id, 50);
+
+            if (error) throw error;
+            if (!data) return;
+
+            // 1. Set History Table Data
+            setHistoryData(data.slice(0, 5));
+
+            // 2. Process Weekly Data
+            const today = new Date();
+            const startOfWeek = new Date(today);
+            const day = startOfWeek.getDay() || 7;
+            if (day !== 1) startOfWeek.setHours(-24 * (day - 1));
+            else startOfWeek.setHours(0, 0, 0, 0);
+
+            const weekDays = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
+            const dayMap = weekDays.reduce((acc, d) => ({ ...acc, [d]: 0 }), {});
+
+            data.forEach(log => {
+                if (!log.fecha) return;
+                const logDate = new Date(log.fecha);
+
+                // Allow data from current week (Monday-Sunday)
+                // Using simple date creation to avoid timezone issues with exact TS comparison
+                const logDateStart = new Date(logDate);
+                logDateStart.setHours(0, 0, 0, 0);
+
+                const startOfWeekStart = new Date(startOfWeek);
+                startOfWeekStart.setHours(0, 0, 0, 0);
+
+                if (logDateStart >= startOfWeekStart) {
+                    const dayIndex = logDate.getDay();
+                    const dayName = dayIndex === 0 ? 'Dom' : weekDays[dayIndex - 1];
+                    const hours = parseDurationToHours(log.horas_trabajadas);
+                    dayMap[dayName] += hours;
+                }
+            });
+
+            const processedData = weekDays.map(d => ({
+                name: d,
+                horas: parseFloat(dayMap[d].toFixed(1))
+            }));
+
+            setWeeklyData(processedData);
+        } catch (error) {
+            console.error("Error loading dashboard data:", error);
+            // Empty fallback
+        }
+    };
+
+    useEffect(() => {
+        let interval;
+
+        const updateTimer = () => {
+            if (jornadaActual && jornadaActual.estado === 'activa') {
+                const inicioString = `${jornadaActual.fecha.split('T')[0]}T${jornadaActual.hora_inicio}`;
+                const inicio = new Date(inicioString);
+                const ahora = new Date();
+
+                if (isNaN(inicio.getTime())) return;
+
+                const diff = Math.max(0, ahora - inicio);
+                const horas = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                setTiempoTranscurrido(
+                    `${horas.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+                );
+            } else {
+                setTiempoTranscurrido('00:00:00');
+            }
+        };
+
+        updateTimer();
+        interval = setInterval(updateTimer, 1000);
+        return () => clearInterval(interval);
+    }, [jornadaActual]);
+
+    const loadJornadaActiva = async () => {
+        try {
+            const { data } = await jornadasService.getJornadaActiva(user.id);
+            setJornadaActual(data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleJornadaAction = async (action) => {
         if (!user) return;
-        
         setLoading(true);
         try {
-            const { data } = await metricasService.getAllMetricas(user.id);
-            setMetricas(data);
+            let result;
+            if (action === 'iniciar') {
+                result = await jornadasService.iniciarJornada(user.id);
+            } else if (action === 'pausar') {
+                result = await jornadasService.pausarJornada(jornadaActual.id);
+            } else if (action === 'finalizar') {
+                result = await jornadasService.finalizarJornada(jornadaActual.id);
+            }
+
+            if (result && result.error) throw result.error;
+
+            if (result && result.data) {
+                setJornadaActual(result.data);
+                if (action === 'finalizar') {
+                    setModalConfig({
+                        isOpen: true,
+                        title: '¡Jornada Finalizada!',
+                        content: <p>Has trabajado <strong>{result.data.horas_trabajadas || '00:00:00'}</strong> horas hoy. ¡Buen trabajo!</p>,
+                        footer: <Button onClick={() => setModalConfig({ ...modalConfig, isOpen: false })}>Cerrar</Button>
+                    });
+                    loadDashboardData();
+                }
+            } else {
+                await loadJornadaActiva();
+            }
         } catch (error) {
-            console.error('Error loading metrics:', error);
+            console.error(error);
+            setModalConfig({
+                isOpen: true,
+                title: 'Error',
+                content: <p>Hubo un problema al {action} la jornada. Por favor intenta de nuevo.<br /><small>{error.message}</small></p>,
+                footer: <Button variant="danger" onClick={() => setModalConfig({ ...modalConfig, isOpen: false })}>Cerrar</Button>
+            });
+            await loadJornadaActiva();
         } finally {
             setLoading(false);
         }
     };
 
-    const formatCurrency = (value) => {
-        return new Intl.NumberFormat('es-PE', {
-            style: 'currency',
-            currency: 'PEN'
-        }).format(value);
+    const getStatusColor = () => {
+        if (!jornadaActual) return 'neutral';
+        return jornadaActual.estado === 'activa' ? 'success' :
+            jornadaActual.estado === 'pausada' ? 'warning' : 'neutral';
     };
 
-    const getStatsData = () => {
-        if (!metricas) return [];
-
-        return [
-            {
-                id: 'ingresos',
-                title: 'Ingresos Totales',
-                value: formatCurrency(metricas.ingresos),
-                subtitle: 'Increased from last month',
-                variant: 'highlight',
-                trend: { type: 'up', icon: '📈' }
-            },
-            {
-                id: 'costos',
-                title: 'Costos Totales',
-                value: formatCurrency(metricas.costos),
-                subtitle: 'Inventory costs',
-                variant: 'default',
-                trend: { type: 'down', icon: '📉' }
-            },
-            {
-                id: 'clientes',
-                title: 'Clientes',
-                value: `${metricas.clientes.nuevos} nuevos / ${metricas.clientes.recurrentes} recurrentes`,
-                subtitle: 'Client distribution',
-                variant: 'default',
-                trend: { type: 'up', icon: '👥' }
-            },
-            {
-                id: 'utilidad',
-                title: 'Utilidad Neta',
-                value: `${formatCurrency(metricas.utilidad.valor)} (${metricas.utilidad.porcentaje.toFixed(1)}%)`,
-                subtitle: 'Net profit margin',
-                variant: metricas.utilidad.valor > 0 ? 'success' : 'danger',
-                trend: metricas.utilidad.valor > 0 ? { type: 'up', icon: '💰' } : { type: 'down', icon: '📉' }
-            }
-        ];
+    const getStatusText = () => {
+        if (!jornadaActual) return 'Sin jornada';
+        return jornadaActual.estado === 'activa' ? 'Trabajando' :
+            jornadaActual.estado === 'pausada' ? 'Pausado' : 'Finalizado';
     };
+
+    const navigate = useNavigate();
+    const handleViewAllHistory = () => navigate('/historial');
 
     return (
-        <Layout
-            title="Dashboard"
-            subtitle="Plan, prioritize, and accomplish your tasks with ease."
-        >
-            <div className="dashboard__actions">
-                <Button variant="primary" icon={<PlusIcon />}>
-                    Add Project
-                </Button>
-                <Button variant="secondary">
-                    Import Data
-                </Button>
-            </div>
-
-            <div className="dashboard__stats">
-                {loading ? (
-                    [...Array(4)].map((_, i) => (
-                        <div key={i} className="stats-skeleton">
-                            <div className="skeleton-title"></div>
-                            <div className="skeleton-value"></div>
-                            <div className="skeleton-subtitle"></div>
+        <Layout title="Dashboard" subtitle="Bienvenido al panel de control de tu actividad diaria">
+            <div className="dashboard-container">
+                {/* Top: Metrics */}
+                <div className="metrics-row">
+                    <Card className="metric-card">
+                        <div className="metric-icon" style={{ background: '#ECFDF5', color: '#10B981' }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                         </div>
-                    ))
-                ) : (
-                    getStatsData().map((stat) => (
-                        <StatsCard
-                            key={stat.id}
-                            title={stat.title}
-                            value={stat.value}
-                            subtitle={stat.subtitle}
-                            variant={stat.variant}
-                            trend={stat.trend}
-                        />
-                    ))
-                )}
-            </div>
-
-            <div className="dashboard__grid">
-                <div className="dashboard__column dashboard__column--wide">
-                    <ProjectAnalytics flujoData={metricas?.flujo} />
-                    <TeamCollaboration />
+                        <div className="metric-info">
+                            <span className="metric-label">Horas Trabajadas</span>
+                            <span className="metric-value">25h 24m</span>
+                            <span className="metric-subtext positive">+5% vs semana pasada</span>
+                        </div>
+                    </Card>
+                    <Card className="metric-card">
+                        <div className="metric-icon" style={{ background: '#EEF2FF', color: '#6366F1' }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+                        </div>
+                        <div className="metric-info">
+                            <span className="metric-label">Actividad</span>
+                            <span className="metric-value">85%</span>
+                            <span className="metric-subtext">3 días trabajados</span>
+                        </div>
+                    </Card>
+                    <Card className="metric-card">
+                        <div className="metric-icon" style={{ background: '#FFF7ED', color: '#F97316' }}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                        </div>
+                        <div className="metric-info">
+                            <span className="metric-label">Media Diaria</span>
+                            <span className="metric-value">8h 30m</span>
+                            <span className="metric-subtext positive">+10% vs objetivo</span>
+                        </div>
+                    </Card>
                 </div>
 
-                <div className="dashboard__column">
-                    <div className="dashboard__reminders">
-                        <h3 className="dashboard__card-title">Reminders</h3>
-                        <div className="dashboard__reminder-content">
-                            <h4 className="dashboard__meeting-title">Meeting with Arc Company</h4>
-                            <p className="dashboard__meeting-time">Time: 02:00 pm - 04:00 pm</p>
-                            <Button variant="primary" fullWidth>
-                                📹 Start Meeting
-                            </Button>
-                        </div>
-                    </div>
+                {/* Middle: Chart & Control Panel */}
+                <div className="middle-section">
+                    <Card className="chart-card-large">
+                        <h3>Horas Semanales</h3>
+                        <ResponsiveContainer width="100%" height={220}>
+                            <BarChart data={weeklyData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 11 }} />
+                                <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                                <Bar dataKey="horas" fill="#C5FF00" radius={[4, 4, 4, 4]} barSize={24} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </Card>
 
-                    <ProjectProgress />
-                </div>
-
-                <div className="dashboard__column">
-                    <div className="dashboard__project-list">
-                        <div className="dashboard__project-header">
-                            <h3 className="dashboard__card-title">Project</h3>
-                            <Button variant="secondary" size="small" icon={<PlusIcon />}>
-                                New
-                            </Button>
+                    <Card className="control-panel-card">
+                        <div className="control-header-centered">
+                            <h3>Control de Jornada</h3>
+                            <span className={`status-pill ${getStatusColor()}`}>
+                                <span className="status-dot"></span>
+                                {getStatusText()}
+                            </span>
+                            <div className="big-timer-compact">{tiempoTranscurrido}</div>
                         </div>
-                        <ul className="dashboard__projects">
-                            {PROJECTS.map((project) => (
-                                <li key={project.id} className="dashboard__project-item">
-                                    <span className="dashboard__project-icon">{project.icon}</span>
-                                    <div className="dashboard__project-info">
-                                        <span className="dashboard__project-name">{project.name}</span>
-                                        <span className="dashboard__project-date">Due date: {project.dueDate}</span>
+
+                        <div className="action-buttons-grid">
+                            {!jornadaActual || jornadaActual.estado === 'finalizada' ? (
+                                <button
+                                    className="action-btn primary"
+                                    onClick={() => handleJornadaAction('iniciar')}
+                                    disabled={loading}
+                                >
+                                    <Play size={20} style={{ marginRight: '8px' }} />
+                                    Iniciar Jornada
+                                </button>
+                            ) : (
+                                <>
+                                    <div className="pause-actions">
+                                        <button
+                                            className="pause-btn"
+                                            onClick={() => handleJornadaAction('pausar')}
+                                            disabled={loading || jornadaActual.estado === 'pausada'}
+                                            title="Comida"
+                                        >
+                                            <Utensils size={20} />
+                                            <span>Comida</span>
+                                        </button>
+                                        <button
+                                            className="pause-btn"
+                                            onClick={() => handleJornadaAction('pausar')}
+                                            disabled={loading || jornadaActual.estado === 'pausada'}
+                                            title="Descanso"
+                                        >
+                                            <Coffee size={20} />
+                                            <span>Descanso</span>
+                                        </button>
+                                        <button
+                                            className="pause-btn"
+                                            onClick={() => handleJornadaAction('pausar')}
+                                            disabled={loading || jornadaActual.estado === 'pausada'}
+                                            title="Otra"
+                                        >
+                                            <Clock size={20} />
+                                            <span>Otra</span>
+                                        </button>
                                     </div>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                                    <button
+                                        className="action-btn danger"
+                                        onClick={() => handleJornadaAction('finalizar')}
+                                        disabled={loading}
+                                    >
+                                        <Square size={20} style={{ marginRight: '8px' }} />
+                                        Finalizar
+                                    </button>
+                                    {jornadaActual.estado === 'pausada' && (
+                                        <button
+                                            className="action-btn secondary"
+                                            onClick={() => handleJornadaAction('iniciar')}
+                                        >
+                                            <Play size={20} style={{ marginRight: '8px' }} />
+                                            Reanudar
+                                        </button>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    </Card>
+                </div>
 
-                    <TimeTracker />
+                {/* Bottom: History Table */}
+                <div className="history-section">
+                    <Card className="history-card">
+                        <div className="history-header">
+                            <h3>Últimas Jornadas</h3>
+                            <button className="view-all-btn" onClick={handleViewAllHistory}>Ver todo</button>
+                        </div>
+                        <table className="dashboard-table">
+                            <thead>
+                                <tr>
+                                    <th>FECHA</th>
+                                    <th>HORA INICIO</th>
+                                    <th>HORAS</th>
+                                    <th>ESTADO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {historyData.length > 0 ? (
+                                    historyData.map((jornada, index) => (
+                                        <tr key={jornada.id || index}>
+                                            <td>
+                                                <div className="table-date">
+                                                    <span className="date-day">
+                                                        {new Date(jornada.fecha).toLocaleDateString('es-ES', { weekday: 'long' })}
+                                                    </span>
+                                                    <span className="date-num">
+                                                        {new Date(jornada.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td>{jornada.hora_inicio}</td>
+                                            <td>
+                                                <span className="hours-badge">
+                                                    {jornada.horas_trabajadas || '--'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span className={`status-text ${jornada.estado === 'activa' ? 'success' : 'completed'}`}>
+                                                    {jornada.estado === 'activa' ? 'EN CURSO' : 'COMPLETADO'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="4" style={{ textAlign: 'center', padding: '24px', color: '#6B7280' }}>
+                                            No hay registros recientes
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </Card>
                 </div>
             </div>
+
+            <Modal
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+                title={modalConfig.title}
+                footer={modalConfig.footer}
+            >
+                {modalConfig.content}
+            </Modal>
         </Layout>
     );
 }

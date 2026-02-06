@@ -1,112 +1,124 @@
-/* Button Component Styles */
-
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-2);
+    gap: 8px;
     font-family: var(--font-family);
-    font-weight: var(--font-weight-medium);
-    border-radius: var(--radius-lg);
+    font-weight: 500;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    transition: all 0.2s ease;
     border: none;
     outline: none;
     text-decoration: none;
     white-space: nowrap;
+    letter-spacing: 0.3px;
+    text-transform: none;
 }
 
 .btn:focus-visible {
-    box-shadow: 0 0 0 3px rgba(64, 145, 108, 0.3);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
 }
 
 .btn:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
+    transform: none !important;
 }
 
-/* Sizes */
 .btn--small {
-    padding: var(--space-2) var(--space-3);
-    font-size: var(--font-size-sm);
-    min-height: 32px;
+    padding: 8px 16px;
+    font-size: 13px;
+    min-height: 36px;
 }
 
 .btn--medium {
-    padding: var(--space-3) var(--space-5);
-    font-size: var(--font-size-base);
-    min-height: 44px;
+    padding: 10px 20px;
+    font-size: 14px;
+    min-height: 40px;
 }
 
 .btn--large {
-    padding: var(--space-4) var(--space-6);
-    font-size: var(--font-size-lg);
-    min-height: 52px;
+    padding: 12px 24px;
+    font-size: 16px;
+    min-height: 48px;
 }
 
-/* Variants */
 .btn--primary {
-    background-color: var(--color-primary-800);
-    color: var(--color-white);
+    background-color: #2d7a4f;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(45, 122, 79, 0.2);
 }
 
 .btn--primary:hover:not(:disabled) {
-    background-color: var(--color-primary-900);
+    background-color: #24603d;
+    box-shadow: 0 6px 16px rgba(45, 122, 79, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn--primary:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
 }
 
 .btn--secondary {
-    background-color: var(--color-white);
-    color: var(--color-neutral-800);
-    border: 1px solid var(--color-neutral-300);
+    background-color: white;
+    color: #374151;
+    border: 1px solid #E5E7EB;
 }
 
 .btn--secondary:hover:not(:disabled) {
-    background-color: var(--color-neutral-100);
-    border-color: var(--color-neutral-400);
+    background-color: #F9FAFB;
+    border-color: #D1D5DB;
+    color: #111827;
 }
 
 .btn--success {
-    background-color: var(--color-success);
-    color: var(--color-white);
+    background-color: #10B981;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
 .btn--success:hover:not(:disabled) {
-    background-color: var(--color-primary-900);
+    background-color: #059669;
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
 }
 
 .btn--danger {
-    background-color: var(--color-danger);
-    color: var(--color-white);
+    background-color: #EF4444;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .btn--danger:hover:not(:disabled) {
-    background-color: #c1303b;
+    background-color: #DC2626;
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    transform: translateY(-1px);
 }
 
 .btn--warning {
-    background-color: var(--color-warning);
-    color: var(--color-white);
+    background-color: #F59E0B;
+    color: #ffffff;
 }
 
 .btn--warning:hover:not(:disabled) {
-    background-color: #e09043;
+    background-color: #D97706;
 }
 
 .btn--ghost {
     background-color: transparent;
-    color: var(--color-neutral-700);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .btn--ghost:hover:not(:disabled) {
-    background-color: var(--color-neutral-100);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Full Width */
 .btn--full-width {
     width: 100%;
 }
 
-/* Loading State */
 .btn--loading {
     position: relative;
     color: transparent;
@@ -114,12 +126,12 @@
 
 .btn__spinner {
     position: absolute;
-    width: 18px;
-    height: 18px;
-    border: 2px solid currentColor;
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid currentColor;
     border-right-color: transparent;
     border-radius: 50%;
-    animation: spin 0.75s linear infinite;
+    animation: spin 0.7s linear infinite;
 }
 
 .btn--loading .btn__spinner {
@@ -127,10 +139,9 @@
 }
 
 .btn--secondary.btn--loading .btn__spinner {
-    color: var(--color-neutral-600);
+    color: rgba(255, 255, 255, 0.9);
 }
 
-/* Icon */
 .btn__icon {
     display: flex;
     align-items: center;
@@ -138,8 +149,8 @@
 }
 
 .btn__icon svg {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
 }
 
 @keyframes spin {

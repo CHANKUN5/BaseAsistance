@@ -20,6 +20,25 @@
     overflow-y: auto;
 }
 
+.layout__page-header {
+    margin-bottom: var(--space-6);
+}
+
+.layout__page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.02em;
+}
+
+.layout__page-subtitle {
+    font-size: 13px;
+    font-weight: 400;
+    color: #6B7280;
+    margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .layout__main {

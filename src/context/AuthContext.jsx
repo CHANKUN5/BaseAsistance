@@ -52,6 +52,24 @@ export function AuthProvider({ children }) {
         }
     }
 
+    function translateError(errorMessage) {
+        const translations = {
+            'Invalid login credentials': 'Credenciales de acceso inválidas',
+            'Email not confirmed': 'El correo electrónico no ha sido confirmado',
+            'User not found': 'Usuario no encontrado',
+            'Invalid password': 'Contraseña incorrecta',
+            'Too many requests': 'Demasiados intentos. Por favor, espera un momento',
+            'Network error': 'Error de conexión. Verifica tu internet',
+        };
+
+        for (const [english, spanish] of Object.entries(translations)) {
+            if (errorMessage.includes(english)) {
+                return spanish;
+            }
+        }
+        return 'Error al iniciar sesión. Verifica tus credenciales';
+    }
+
     async function login(email, password) {
         setLoading(true);
         setError(null);
@@ -61,8 +79,9 @@ export function AuthProvider({ children }) {
             setUser(data?.user || null);
             return { success: true, data };
         } catch (err) {
-            setError(err.message);
-            return { success: false, error: err.message };
+            const translatedError = translateError(err.message);
+            setError(translatedError);
+            return { success: false, error: translatedError };
         } finally {
             setLoading(false);
         }

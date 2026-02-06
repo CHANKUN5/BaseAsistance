@@ -182,7 +182,7 @@ export default function Jornada() {
                                 loading={loading}
                                 fullWidth
                             >
-                                ▶️ Iniciar Jornada
+                                Iniciar Jornada
                             </Button>
                             
                             <Button
@@ -193,7 +193,7 @@ export default function Jornada() {
                                 loading={loading}
                                 fullWidth
                             >
-                                ⏸️ Pausar Jornada
+                                Pausar Jornada
                             </Button>
                             
                             <Button
@@ -204,7 +204,7 @@ export default function Jornada() {
                                 loading={loading}
                                 fullWidth
                             >
-                                ⏹️ Finalizar Jornada
+                                Finalizar Jornada
                             </Button>
                         </div>
                     </Card>

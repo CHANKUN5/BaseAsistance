@@ -34,9 +34,9 @@ export default function Signup() {
         const newErrors = {};
 
         if (!formData.email) {
-            newErrors.email = 'El email es requerido';
+            newErrors.email = 'El correo electrónico es requerido';
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Email inválido';
+            newErrors.email = 'Correo electrónico inválido';
         }
 
         if (!formData.password) {
@@ -78,15 +78,8 @@ export default function Signup() {
         <div className="auth-page">
             <div className="auth-container">
                 <div className="auth-header">
-                    <div className="auth-logo">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="12" cy="12" r="10" opacity="0.2" />
-                            <circle cx="12" cy="12" r="6" />
-                        </svg>
-                        <span>Donezo</span>
-                    </div>
-                    <h1 className="auth-title">Crear Cuenta</h1>
-                    <p className="auth-subtitle">Regístrate para comenzar a usar la aplicación</p>
+                    <h1 className="auth-title">Comenzar</h1>
+                    <p className="auth-subtitle">Crea tu cuenta y gestiona tu tiempo de trabajo</p>
                 </div>
 
                 {submitError && (
@@ -100,42 +93,39 @@ export default function Signup() {
                 {submitSuccess && (
                     <Alert
                         type="success"
-                        message="¡Cuenta creada exitosamente! Redirigiendo al login..."
+                        message="¡Cuenta creada exitosamente! Redirigiendo al inicio de sesión..."
                     />
                 )}
 
                 <form className="auth-form" onSubmit={handleSubmit}>
                     <Input
-                        label="Email"
                         type="email"
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        placeholder="tu@email.com"
+                        placeholder="Correo Electrónico"
                         error={errors.email}
                         autoComplete="email"
                         required
                     />
 
                     <Input
-                        label="Contraseña"
                         type="password"
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
-                        placeholder="Mínimo 6 caracteres"
+                        placeholder="Contraseña"
                         error={errors.password}
                         autoComplete="new-password"
                         required
                     />
 
                     <Input
-                        label="Confirmar Contraseña"
                         type="password"
                         name="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleChange}
-                        placeholder="Repite tu contraseña"
+                        placeholder="Confirmar Contraseña"
                         error={errors.confirmPassword}
                         autoComplete="new-password"
                         required

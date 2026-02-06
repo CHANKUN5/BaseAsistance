@@ -5,6 +5,8 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Jornada from './pages/Jornada';
 import Historial from './pages/Historial';
+import Profile from './pages/Profile';
+import Analytics from './pages/Analytics';
 
 export default function AppRoutes() {
     return (
@@ -36,10 +38,18 @@ export default function AppRoutes() {
                 }
             />
             <Route
+                path="/profile"
+                element={
+                    <ProtectedRoute>
+                        <Profile />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
                 path="/analytics"
                 element={
                     <ProtectedRoute>
-                        <Dashboard />
+                        <Analytics />
                     </ProtectedRoute>
                 }
             />

@@ -1,10 +1,5 @@
-/* ============================================
-   Global Styles - Control Horario
-   ============================================ */
-
 @import './variables.css';
 
-/* === CSS Reset === */
 *,
 *::before,
 *::after {
@@ -33,7 +28,6 @@ body {
     min-height: 100vh;
 }
 
-/* === Typography Base === */
 h1,
 h2,
 h3,
@@ -83,7 +77,6 @@ a:hover {
     color: var(--color-primary-900);
 }
 
-/* === Buttons Reset === */
 button {
     font-family: inherit;
     font-size: inherit;
@@ -92,7 +85,6 @@ button {
     background: none;
 }
 
-/* === Form Elements Reset === */
 input,
 textarea,
 select {
@@ -100,20 +92,17 @@ select {
     font-size: inherit;
 }
 
-/* === Lists Reset === */
 ul,
 ol {
     list-style: none;
 }
 
-/* === Images === */
 img {
     max-width: 100%;
     height: auto;
     display: block;
 }
 
-/* === Scrollbar Styling === */
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -133,7 +122,6 @@ img {
     background: var(--color-neutral-400);
 }
 
-/* === Utility Classes === */
 .visually-hidden {
     position: absolute;
     width: 1px;
@@ -198,7 +186,6 @@ img {
     font-weight: var(--font-weight-bold);
 }
 
-/* === Animations === */
 @keyframes fadeIn {
     from {
         opacity: 0;

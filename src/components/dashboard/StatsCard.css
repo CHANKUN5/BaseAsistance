@@ -1,9 +1,7 @@
-/* StatsCard Component Styles */
-
 .stats-card {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: 12px;
     min-width: 180px;
 }
 
@@ -14,76 +12,66 @@
 }
 
 .stats-card__title {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: inherit;
-    opacity: 0.9;
-}
-
-.stats-card__action {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-lg);
-    background-color: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.card--default .stats-card__action {
-    background-color: var(--color-neutral-100);
-    border-color: var(--color-neutral-200);
-}
-
-.stats-card__action:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-}
-
-.card--default .stats-card__action:hover {
-    background-color: var(--color-neutral-200);
-}
-
-.stats-card__arrow {
-    width: 14px;
-    height: 14px;
-    color: inherit;
-}
-
-.card--default .stats-card__arrow {
-    color: var(--color-neutral-600);
+    font-size: 13px;
+    font-weight: 500;
+    color: #6B7280;
+    letter-spacing: -0.01em;
 }
 
 .stats-card__value {
-    font-size: var(--font-size-5xl);
-    font-weight: var(--font-weight-bold);
-    line-height: 1;
-    color: inherit;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #111827;
+    letter-spacing: -0.03em;
 }
 
-.card--default .stats-card__value {
-    color: var(--color-neutral-900);
+.card--highlight .stats-card__value {
+    color: #FFFFFF;
 }
 
 .stats-card__footer {
     display: flex;
     align-items: center;
-    gap: var(--space-2);
+    gap: 8px;
     margin-top: auto;
 }
 
 .stats-card__trend {
-    font-size: var(--font-size-sm);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.stats-card__trend-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.stats-card__trend--up {
+    color: #10B981;
+}
+
+.stats-card__trend--down {
+    color: #EF4444;
+}
+
+.stats-card__trend-text {
+    font-size: 12px;
 }
 
 .stats-card__subtitle {
-    font-size: var(--font-size-sm);
-    opacity: 0.8;
+    font-size: 13px;
+    font-weight: 400;
+    color: #9CA3AF;
 }
 
-/* Highlight variant specific */
+.card--highlight .stats-card__title {
+    color: rgba(255, 255, 255, 0.9);
+}
+
 .card--highlight .stats-card__subtitle {
-    color: var(--color-primary-200);
+    color: rgba(255, 255, 255, 0.8);
 }

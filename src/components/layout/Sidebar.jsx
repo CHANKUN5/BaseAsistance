@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import Modal from '../common/Modal';
+import Button from '../common/Button';
 import './Sidebar.css';
 
 const Icons = {
@@ -38,25 +41,10 @@ const Icons = {
             <line x1="6" y1="20" x2="6" y2="14" />
         </svg>
     ),
-    users: (
+    user: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-            <circle cx="9" cy="7" r="4" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-        </svg>
-    ),
-    settings: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-        </svg>
-    ),
-    help: (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-            <line x1="12" y1="17" x2="12.01" y2="17" />
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
         </svg>
     ),
     logout: (
@@ -72,25 +60,29 @@ const MENU_ITEMS = [
     { to: '/dashboard', icon: Icons.dashboard, label: 'Panel de Control' },
     { to: '/jornada', icon: Icons.clock, label: 'Jornada' },
     { to: '/historial', icon: Icons.calendar, label: 'Historial' },
-    { to: '/analytics', icon: Icons.analytics, label: 'Análisis' },
-    { to: '/team', icon: Icons.users, label: 'Equipo' }
+    { to: '/analytics', icon: Icons.analytics, label: 'Análisis' }
 ];
 
-const GENERAL_ITEMS = [
-    { to: '/settings', icon: Icons.settings, label: 'Configuración' },
-    { to: '/help', icon: Icons.help, label: 'Ayuda' }
+const PROFILE_ITEMS = [
+    { to: '/profile', icon: Icons.user, label: 'Mi Perfil' }
 ];
 
 export default function Sidebar() {
     const { logout } = useAuth();
     const navigate = useNavigate();
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-    async function handleLogout() {
+    const handleLogoutClick = () => {
+        setShowLogoutModal(true);
+    };
+
+    const confirmLogout = async () => {
         const result = await logout();
         if (result.success) {
             navigate('/login');
         }
-    }
+        setShowLogoutModal(false);
+    };
 
     return (
         <aside className="sidebar">
@@ -119,9 +111,9 @@ export default function Sidebar() {
             </nav>
 
             <nav className="sidebar__nav sidebar__nav--general">
-                <span className="sidebar__label">GENERAL</span>
+                <span className="sidebar__label">CUENTA</span>
                 <ul className="sidebar__menu">
-                    {GENERAL_ITEMS.map((item) => (
+                    {PROFILE_ITEMS.map((item) => (
                         <li key={item.to}>
                             <NavLink
                                 to={item.to}
@@ -135,13 +127,32 @@ export default function Sidebar() {
                         </li>
                     ))}
                     <li>
-                        <button className="sidebar__link" onClick={handleLogout}>
+                        <button className="sidebar__link" onClick={handleLogoutClick}>
                             <span className="sidebar__link-icon">{Icons.logout}</span>
                             <span className="sidebar__link-text">Cerrar Sesión</span>
                         </button>
                     </li>
                 </ul>
             </nav>
+
+            <Modal
+                isOpen={showLogoutModal}
+                onClose={() => setShowLogoutModal(false)}
+                title="Cerrar Sesión"
+                size="small"
+                footer={
+                    <>
+                        <Button variant="secondary" onClick={() => setShowLogoutModal(false)}>
+                            Cancelar
+                        </Button>
+                        <Button variant="danger" onClick={confirmLogout}>
+                            Cerrar Sesión
+                        </Button>
+                    </>
+                }
+            >
+                <p>¿Estás seguro de que deseas cerrar tu sesión actual?</p>
+            </Modal>
         </aside>
     );
 }

@@ -1,8 +1,3 @@
-/**
- * Input Component
- * Reusable form input with label and error handling
- */
-
 import './Input.css';
 
 export default function Input({

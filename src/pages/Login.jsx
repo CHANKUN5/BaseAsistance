@@ -32,9 +32,9 @@ export default function Login() {
         const newErrors = {};
 
         if (!formData.email) {
-            newErrors.email = 'El email es requerido';
+            newErrors.email = 'El correo electrónico es requerido';
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Email inválido';
+            newErrors.email = 'Correo electrónico inválido';
         }
 
         if (!formData.password) {
@@ -66,15 +66,8 @@ export default function Login() {
         <div className="auth-page">
             <div className="auth-container">
                 <div className="auth-header">
-                    <div className="auth-logo">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="12" cy="12" r="10" opacity="0.2" />
-                            <circle cx="12" cy="12" r="6" />
-                        </svg>
-                        <span>Donezo</span>
-                    </div>
-                    <h1 className="auth-title">Iniciar Sesión</h1>
-                    <p className="auth-subtitle">Ingresa tus credenciales para continuar</p>
+                    <h1 className="auth-title">Bienvenido</h1>
+                    <p className="auth-subtitle">Controla tu jornada laboral de forma eficiente</p>
                 </div>
 
                 {submitError && (
@@ -87,24 +80,22 @@ export default function Login() {
 
                 <form className="auth-form" onSubmit={handleSubmit}>
                     <Input
-                        label="Email"
                         type="email"
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        placeholder="tu@email.com"
+                        placeholder="Correo Electrónico"
                         error={errors.email}
                         autoComplete="email"
                         required
                     />
 
                     <Input
-                        label="Contraseña"
                         type="password"
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
-                        placeholder="••••••••"
+                        placeholder="Contraseña"
                         error={errors.password}
                         autoComplete="current-password"
                         required
