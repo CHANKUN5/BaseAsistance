@@ -48,7 +48,7 @@ export async function iniciarJornada(userId) {
             estado: 'activa',
             created_at: new Date().toISOString()
         };
-        
+
         jornadaActivaDemo = nuevaJornada;
         return { data: nuevaJornada, error: null };
     }
@@ -64,7 +64,7 @@ export async function iniciarJornada(userId) {
             }
         ])
         .select()
-        .single();
+        .maybeSingle();
 
     return { data, error };
 }
@@ -90,7 +90,7 @@ export async function pausarJornada(jornadaId) {
         })
         .eq('id', jornadaId)
         .select()
-        .single();
+        .maybeSingle();
 
     return { data, error };
 }
@@ -102,30 +102,30 @@ export async function finalizarJornada(jornadaId) {
             const fin = new Date();
             const diff = fin - inicio;
             const horas = (diff / (1000 * 60 * 60));
-            
+
             jornadaActivaDemo = {
                 ...jornadaActivaDemo,
                 estado: 'finalizada',
                 hora_fin: fin.toTimeString().split(' ')[0],
                 horas_trabajadas: parseFloat(horas.toFixed(2))
             };
-            
+
             demoJornadas.unshift(jornadaActivaDemo);
             const result = { ...jornadaActivaDemo };
             jornadaActivaDemo = null;
-            
+
             return { data: result, error: null };
         }
         return { data: null, error: { message: 'Jornada no encontrada' } };
     }
 
     const horaFin = new Date().toTimeString().split(' ')[0];
-    
+
     const { data: jornada } = await supabase
         .from('jornadas')
         .select('hora_inicio, fecha')
         .eq('id', jornadaId)
-        .single();
+        .maybeSingle();
 
     if (jornada) {
         const inicio = new Date(`${jornada.fecha}T${jornada.hora_inicio}`);
@@ -142,7 +142,7 @@ export async function finalizarJornada(jornadaId) {
             })
             .eq('id', jornadaId)
             .select()
-            .single();
+            .maybeSingle();
 
         return { data, error };
     }
@@ -152,9 +152,9 @@ export async function finalizarJornada(jornadaId) {
 
 export async function getJornadaActiva(userId) {
     if (!isSupabaseConfigured()) {
-        return { 
-            data: jornadaActivaDemo && jornadaActivaDemo.user_id === userId ? jornadaActivaDemo : null, 
-            error: null 
+        return {
+            data: jornadaActivaDemo && jornadaActivaDemo.user_id === userId ? jornadaActivaDemo : null,
+            error: null
         };
     }
 
@@ -165,16 +165,16 @@ export async function getJornadaActiva(userId) {
         .in('estado', ['activa', 'pausada'])
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
     return { data, error };
 }
 
 export async function getHistorialJornadas(userId, limit = 50) {
     if (!isSupabaseConfigured()) {
-        return { 
-            data: demoJornadas.filter(j => j.user_id === userId).slice(0, limit), 
-            error: null 
+        return {
+            data: demoJornadas.filter(j => j.user_id === userId).slice(0, limit),
+            error: null
         };
     }
 
