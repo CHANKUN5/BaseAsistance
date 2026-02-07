@@ -76,7 +76,9 @@ export default function Dashboard() {
 
             data.forEach(log => {
                 if (!log.fecha) return;
-                const logDate = new Date(log.fecha);
+                // Fix: simple YYYY-MM-DD parsing can lead to UTC offsets. 
+                // Adding T00:00:00 ensures it's parsed as a date start.
+                const logDate = new Date(log.fecha + 'T00:00:00');
 
                 // Allow data from current week (Monday-Sunday)
                 // Using simple date creation to avoid timezone issues with exact TS comparison
@@ -111,7 +113,9 @@ export default function Dashboard() {
 
         const updateTimer = () => {
             if (jornadaActual && jornadaActual.estado === 'activa') {
-                const inicioString = `${jornadaActual.fecha.split('T')[0]}T${jornadaActual.hora_inicio}`;
+                // Ensure date and time are combined correctly
+                const datePart = jornadaActual.fecha.split('T')[0];
+                const inicioString = `${datePart}T${jornadaActual.hora_inicio}`;
                 const inicio = new Date(inicioString);
                 const ahora = new Date();
 
@@ -166,7 +170,7 @@ export default function Dashboard() {
                         isOpen: true,
                         title: '¡Jornada Finalizada!',
                         content: <p>Has trabajado <strong>{result.data.horas_trabajadas || '00:00:00'}</strong> horas hoy. ¡Buen trabajo!</p>,
-                        footer: <Button onClick={() => setModalConfig({ ...modalConfig, isOpen: false })}>Cerrar</Button>
+                        footer: <Button onClick={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}>Cerrar</Button>
                     });
                     loadDashboardData();
                 }
@@ -351,10 +355,10 @@ export default function Dashboard() {
                                             <td>
                                                 <div className="table-date">
                                                     <span className="date-day">
-                                                        {new Date(jornada.fecha).toLocaleDateString('es-ES', { weekday: 'long' })}
+                                                        {new Date(jornada.fecha + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long' })}
                                                     </span>
                                                     <span className="date-num">
-                                                        {new Date(jornada.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
+                                                        {new Date(jornada.fecha + 'T00:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
                                                     </span>
                                                 </div>
                                             </td>

@@ -1,87 +1,10 @@
 import { supabase } from './supabase';
 
-/**
- * MOCK DATA GENERATOR
- * Returns data formatted for Analytics charts
- */
-const getMockAnalyticsData = (period = 'semana') => {
-    // Helper for shift logic
-    const today = new Date();
-    const getShiftedDate = (daysAgo) => {
-        const d = new Date(today);
-        d.setDate(today.getDate() - daysAgo);
-        return d;
-    };
-
-    if (period === 'semana') {
-        const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-        return {
-            daily: [
-                { name: 'Lun', horas: 7.5 }, { name: 'Mar', horas: 8.2 },
-                { name: 'Mié', horas: 7.8 }, { name: 'Jue', horas: 8.5 },
-                { name: 'Vie', horas: 6.5 }, { name: 'Sáb', horas: 4.0 },
-                { name: 'Dom', horas: 0 }
-            ],
-            trend: [
-                { name: 'Lun', horas: 7.5 }, { name: 'Mar', horas: 8.2 },
-                { name: 'Mié', horas: 7.8 }, { name: 'Jue', horas: 8.5 },
-                { name: 'Vie', horas: 6.5 }, { name: 'Sáb', horas: 4.0 },
-                { name: 'Dom', horas: 0 }
-            ],
-            kpis: {
-                totalHoras: '42h 30m',
-                diasTrabajados: '6',
-                mediaDiaria: '7h 05m',
-                totalPausas: '5',
-                trendHoras: '+12%',
-                trendMedia: '+8%'
-            },
-            subtexts: {
-                totalHoras: 'esta semana',
-                diasTrabajados: 'días',
-                mediaDiaria: 'por día',
-                totalPausas: 'acumulado'
-            }
-        };
-    } else {
-        return {
-            daily: [
-                { name: 'Sem 1', horas: 38 }, { name: 'Sem 2', horas: 42 },
-                { name: 'Sem 3', horas: 35 }, { name: 'Sem 4', horas: 40 }
-            ],
-            trend: [
-                { name: 'Sem 1', horas: 38 }, { name: 'Sem 2', horas: 42 },
-                { name: 'Sem 3', horas: 35 }, { name: 'Sem 4', horas: 40 }
-            ],
-            kpis: {
-                totalHoras: '155h',
-                diasTrabajados: '22',
-                mediaDiaria: '7h 54m',
-                totalPausas: '21',
-                trendHoras: '+8%',
-                trendMedia: '+5%'
-            },
-            subtexts: {
-                totalHoras: 'este mes',
-                diasTrabajados: 'días',
-                mediaDiaria: 'por día',
-                totalPausas: 'acumulado'
-            }
-        };
-    }
-};
-
 export async function getAnalyticsData(userId, period = 'semana') {
     try {
-        console.log(`Fetching analytics for period: ${period}`);
+        console.log(`Fetching analytics from Supabase for period: ${period}`);
 
-        let query = supabase
-            .from('metricas_diarias')
-            .select('*')
-            .eq('user_id', userId)
-            .order('fecha', { ascending: true });
-
-        // Simple filter based on period (last 7 days or last 30 days)
+        // Calculate the past date based on the period
         const now = new Date();
         const pastDate = new Date();
         if (period === 'semana') {
@@ -90,28 +13,61 @@ export async function getAnalyticsData(userId, period = 'semana') {
             pastDate.setDate(now.getDate() - 30);
         }
 
-        const { data, error } = await query.gte('fecha', pastDate.toISOString());
+        // Query the 'metricas' table (new name)
+        const { data, error } = await supabase
+            .from('metricas')
+            .select('*')
+            .eq('usuario_id', userId)
+            .gte('fecha', pastDate.toISOString().split('T')[0])
+            .order('fecha', { ascending: true });
 
         if (error) throw error;
 
-        // If DB return empty, force Mock
         if (!data || data.length === 0) {
-            console.warn("Analytics DB empty, using Mock");
-            return { data: getMockAnalyticsData(period), error: null };
+            return { data: { daily: [], trend: [], kpis: {}, subtexts: {} }, error: null };
         }
 
-        // Process Real Data into Chart Format (Simplified logic for demo)
-        // In a real app, you'd aggregate here. For now, if data exists we map or just return mock 
-        // because the 'metricas_diarias' table is simple.
+        // Processing logic to match the frontend expectations
+        // This is a simplified version; in a full app, you'd aggregate or map these.
+        // For the demo, we'll return the raw metrics mapped to chart format if data exists.
 
-        // Since we want "Demo with Functional Database", let's return dynamic mock data 
-        // BUT logged that we attempted DB connection.
-        // Or better: Use the mock data generator which is robust for the demo requirements.
-        return { data: getMockAnalyticsData(period), error: null };
+        const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const processedDaily = data.map(m => {
+            const date = new Date(m.fecha);
+            return {
+                name: days[date.getDay()],
+                horas: parseFloat(m.total_horas_trabajadas) || 0
+            };
+        });
+
+        const totalHoras = data.reduce((acc, m) => acc + (parseFloat(m.total_horas_trabajadas) || 0), 0);
+        const totalPausas = data.reduce((acc, m) => acc + (m.total_pausas || 0), 0);
+
+        return {
+            data: {
+                daily: processedDaily,
+                trend: processedDaily, // Simple trend for demo
+                kpis: {
+                    totalHoras: `${Math.floor(totalHoras)}h ${Math.round((totalHoras % 1) * 60)}m`,
+                    diasTrabajados: data.length.toString(),
+                    mediaDiaria: `${(totalHoras / (data.length || 1)).toFixed(1)}h`,
+                    totalPausas: totalPausas.toString(),
+                    trendHoras: '+0%', // Placeholder logic
+                    trendMedia: '+0%'
+                },
+                subtexts: {
+                    totalHoras: period === 'semana' ? 'esta semana' : 'este mes',
+                    diasTrabajados: 'días con actividad',
+                    mediaDiaria: 'promedio',
+                    totalPausas: 'total acumulado'
+                }
+            },
+            error: null
+        };
 
     } catch (error) {
-        console.warn("Using Mock Data for Analytics:", error);
-        return { data: getMockAnalyticsData(period), error: null };
+        console.error("Error fetching analytics:", error);
+        return { data: { daily: [], trend: [], kpis: {}, subtexts: {} }, error };
     }
 }
 

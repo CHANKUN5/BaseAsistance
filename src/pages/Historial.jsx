@@ -13,6 +13,10 @@ export default function Historial() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDay, setSelectedDay] = useState(null);
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     useEffect(() => {
         if (user) {
             loadHistorial();
@@ -24,6 +28,7 @@ export default function Historial() {
         try {
             const { data } = await jornadasService.getHistorialJornadas(user.id);
             setJornadas(data || []);
+            setCurrentPage(1); // Reset to first page on reload
         } catch (error) {
             console.error(error);
         } finally {
@@ -32,7 +37,10 @@ export default function Historial() {
     };
 
     const formatearFecha = (fecha) => {
-        return new Date(fecha).toLocaleDateString('es-ES', {
+        if (!fecha) return '--';
+        const dateObj = (fecha instanceof Date) ? fecha : new Date(fecha + 'T00:00:00');
+
+        return dateObj.toLocaleDateString('es-ES', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -94,7 +102,7 @@ export default function Historial() {
         const csvContent = [
             headers.join(','),
             ...jornadas.map(j => {
-                const fecha = new Date(j.fecha).toLocaleDateString('es-ES');
+                const fecha = new Date(j.fecha + 'T00:00:00').toLocaleDateString('es-ES');
                 const inicio = formatearHora(j.hora_inicio);
                 const fin = formatearHora(j.hora_fin);
                 const duracion = formatearDuracion(j.horas_trabajadas);
@@ -136,7 +144,7 @@ export default function Historial() {
     const getJornadaForDay = (date) => {
         if (!date) return null;
         return jornadas.find(j => {
-            const jDate = new Date(j.fecha);
+            const jDate = new Date(j.fecha + 'T00:00:00');
             return jDate.getDate() === date.getDate() &&
                 jDate.getMonth() === date.getMonth() &&
                 jDate.getFullYear() === date.getFullYear();
@@ -226,34 +234,63 @@ export default function Historial() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {jornadas.map((jornada) => (
-                                                <tr key={jornada.id}>
-                                                    <td className="fecha-cell">
-                                                        <div className="fecha-display">
-                                                            <div className="fecha-principal">
-                                                                {new Date(jornada.fecha).toLocaleDateString('es-ES')}
+                                            {jornadas
+                                                .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                                                .map((jornada) => (
+                                                    <tr key={jornada.id}>
+                                                        <td className="fecha-cell">
+                                                            <div className="fecha-display">
+                                                                <div className="fecha-principal">
+                                                                    {new Date(jornada.fecha + 'T00:00:00').toLocaleDateString('es-ES')}
+                                                                </div>
+                                                                <div className="fecha-secundaria">
+                                                                    {new Date(jornada.fecha + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long' })}
+                                                                </div>
                                                             </div>
-                                                            <div className="fecha-secundaria">
-                                                                {new Date(jornada.fecha).toLocaleDateString('es-ES', { weekday: 'long' })}
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>{formatearHora(jornada.hora_inicio)}</td>
-                                                    <td>{formatearHora(jornada.hora_fin)}</td>
-                                                    <td className="duracion-cell">
-                                                        <span className="duracion-badge">
-                                                            {formatearDuracion(jornada.horas_trabajadas)}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <span className={`estado-badge estado-badge--${getEstadoBadge(jornada.estado)}`}>
-                                                            {jornada.estado}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                                        </td>
+                                                        <td>{formatearHora(jornada.hora_inicio)}</td>
+                                                        <td>{formatearHora(jornada.hora_fin)}</td>
+                                                        <td className="duracion-cell">
+                                                            <span className="duracion-badge">
+                                                                {formatearDuracion(jornada.horas_trabajadas)}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <span className={`estado-badge estado-badge--${getEstadoBadge(jornada.estado)}`}>
+                                                                {jornada.estado}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
                                         </tbody>
                                     </table>
+
+                                    {jornadas.length > itemsPerPage && (
+                                        <div className="pagination">
+                                            <div className="pagination-info">
+                                                Mostrando <span>{(currentPage - 1) * itemsPerPage + 1}</span> - <span>{Math.min(currentPage * itemsPerPage, jornadas.length)}</span> de <span>{jornadas.length}</span>
+                                            </div>
+                                            <div className="pagination-controls">
+                                                <button
+                                                    className="pagination-btn"
+                                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                    disabled={currentPage === 1}
+                                                >
+                                                    &larr; Anterior
+                                                </button>
+                                                <div className="pagination-page">
+                                                    Página <span>{currentPage}</span> de {Math.ceil(jornadas.length / itemsPerPage)}
+                                                </div>
+                                                <button
+                                                    className="pagination-btn"
+                                                    onClick={() => setCurrentPage(p => Math.min(Math.ceil(jornadas.length / itemsPerPage), p + 1))}
+                                                    disabled={currentPage >= Math.ceil(jornadas.length / itemsPerPage)}
+                                                >
+                                                    Siguiente &rarr;
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </Card>
