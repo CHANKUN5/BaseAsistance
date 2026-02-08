@@ -144,4 +144,25 @@ src/
 
 ---
 
+## 🔍 Verificación Local (Antes de subir a Vercel)
+
+Para asegurar que la aplicación funcione correctamente en producción, sigue estos pasos:
+
+1. **Construir el proyecto:**
+   ```bash
+   npm run build
+   ```
+   Esto generará la carpeta `dist`. Si hay errores de importación (case-sensitivity), aquí aparecerán.
+
+2. **Previsualizar la versión de producción:**
+   ```bash
+   npm run preview
+   ```
+   Abre el enlace proporcionado (usualmente `http://localhost:4173`). Navega por las rutas y refresca la página para verificar que el `vercel.json` y el enrutamiento SPA funcionen.
+
+3. **Variables de Entorno en Vercel:**
+   Asegúrate de configurar `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en el dashboard de Vercel.
+
+---
+
 > Hecho con ❤️ para una gestión del tiempo impecable.
