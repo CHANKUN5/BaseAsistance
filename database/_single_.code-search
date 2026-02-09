@@ -1,0 +1,43 @@
+# Query: .single()
+# ContextLines: 1
+
+9 results - 2 files
+
+src\services\jornadasService.js:
+   66          .select()
+   67:         .maybeSingle();
+   68  
+
+   92          .select()
+   93:         .maybeSingle();
+
+   94  
+
+  127          .eq('id', jornadaId)
+  128:         .maybeSingle();
+  129  
+
+  144              .select()
+  145:             .maybeSingle();
+  146  
+
+  167          .limit(1)
+  168:         .maybeSingle();
+  169  
+
+src\services\metricasService.js:
+   31          .eq('periodo', new Date().toISOString().split('T')[0])
+   32:         .maybeSingle();
+   33  
+
+   49          .eq('periodo', new Date().toISOString().split('T')[0])
+   50:         .maybeSingle();
+   51  
+
+   73          .eq('periodo', new Date().toISOString().split('T')[0])
+   74:         .maybeSingle();
+   75  
+
+  100          .eq('periodo', new Date().toISOString().split('T')[0])
+  101:         .maybeSingle();
+  102  

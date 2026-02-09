@@ -40,7 +40,10 @@ export async function iniciarJornada(userId) {
         const nuevaJornada = {
             id: Date.now(),
             user_id: userId,
-            fecha: new Date().toISOString().split('T')[0],
+            fecha: (() => {
+                const d = new Date();
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            })(),
             hora_inicio: new Date().toTimeString().split(' ')[0],
             hora_pausa: null,
             hora_fin: null,
@@ -58,13 +61,16 @@ export async function iniciarJornada(userId) {
         .insert([
             {
                 user_id: userId,
-                fecha: new Date().toISOString().split('T')[0],
+                fecha: (() => {
+                    const d = new Date();
+                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                })(),
                 hora_inicio: new Date().toTimeString().split(' ')[0],
                 estado: 'activa'
             }
         ])
         .select()
-        .maybeSingle();
+        .single()
 
     return { data, error };
 }
@@ -90,7 +96,7 @@ export async function pausarJornada(jornadaId) {
         })
         .eq('id', jornadaId)
         .select()
-        .maybeSingle();
+        .single()
 
     return { data, error };
 }
@@ -125,7 +131,7 @@ export async function finalizarJornada(jornadaId) {
         .from('jornadas')
         .select('hora_inicio, fecha')
         .eq('id', jornadaId)
-        .maybeSingle();
+        .maybeSingle()
 
     if (jornada) {
         const inicio = new Date(`${jornada.fecha}T${jornada.hora_inicio}`);
@@ -142,7 +148,7 @@ export async function finalizarJornada(jornadaId) {
             })
             .eq('id', jornadaId)
             .select()
-            .maybeSingle();
+            .maybeSingle()
 
         return { data, error };
     }

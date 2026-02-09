@@ -24,18 +24,26 @@ export async function getIngresosTotales(userId) {
         return { data: demoMetricas.ingresos_totales, error: null };
     }
 
+    console.log("USER ID RECIBIDO:", userId);
+
     const { data, error } = await supabase
         .from('metricas_financieras')
-        .select('ingresos_totales')
-        .eq('user_id', userId)
-        .eq('periodo', new Date().toISOString().split('T')[0])
-        .single();
+        .select('*')
+        .eq('user_id', userId);
 
-    return { 
-        data: data?.ingresos_totales || 0, 
-        error 
+    console.log("DATA SUPABASE:", data);
+    console.log("ERROR SUPABASE:", error);
+
+    if (!data || data.length === 0) {
+        return { data: 0, error };
+    }
+
+    return {
+        data: data[0].ingresos_totales,
+        error
     };
 }
+
 
 export async function getCostosTotales(userId) {
     if (!isSupabaseConfigured()) {
@@ -46,23 +54,25 @@ export async function getCostosTotales(userId) {
         .from('metricas_financieras')
         .select('costos_totales')
         .eq('user_id', userId)
-        .eq('periodo', new Date().toISOString().split('T')[0])
-        .single();
+        .order('periodo', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    return { 
-        data: data?.costos_totales || 0, 
-        error 
+
+    return {
+        data: data?.costos_totales || 0,
+        error
     };
 }
 
 export async function getClientes(userId) {
     if (!isSupabaseConfigured()) {
-        return { 
+        return {
             data: {
                 nuevos: demoMetricas.clientes_nuevos,
                 recurrentes: demoMetricas.clientes_recurrentes
-            }, 
-            error: null 
+            },
+            error: null
         };
     }
 
@@ -70,26 +80,28 @@ export async function getClientes(userId) {
         .from('metricas_financieras')
         .select('clientes_nuevos, clientes_recurrentes')
         .eq('user_id', userId)
-        .eq('periodo', new Date().toISOString().split('T')[0])
-        .single();
+        .order('periodo', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    return { 
+
+    return {
         data: {
             nuevos: data?.clientes_nuevos || 0,
             recurrentes: data?.clientes_recurrentes || 0
-        }, 
-        error 
+        },
+        error
     };
 }
 
 export async function getUtilidadNeta(userId) {
     if (!isSupabaseConfigured()) {
-        return { 
+        return {
             data: {
                 valor: demoMetricas.utilidad_neta,
                 porcentaje: demoMetricas.porcentaje_utilidad
-            }, 
-            error: null 
+            },
+            error: null
         };
     }
 
@@ -97,15 +109,17 @@ export async function getUtilidadNeta(userId) {
         .from('metricas_financieras')
         .select('utilidad_neta, porcentaje_utilidad')
         .eq('user_id', userId)
-        .eq('periodo', new Date().toISOString().split('T')[0])
-        .single();
+        .order('periodo', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    return { 
+
+    return {
         data: {
             valor: data?.utilidad_neta || 0,
             porcentaje: data?.porcentaje_utilidad || 0
-        }, 
-        error 
+        },
+        error
     };
 }
 
@@ -121,7 +135,10 @@ export async function getFlujoIngresos(userId, dias = 7) {
         .from('metricas_financieras')
         .select('periodo, ingresos_totales, costos_totales')
         .eq('user_id', userId)
-        .gte('periodo', fechaInicio.toISOString().split('T')[0])
+        .gte('periodo', (() => {
+            const d = fechaInicio;
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        })())
         .order('periodo', { ascending: true });
 
     const flujoData = data?.map(item => ({

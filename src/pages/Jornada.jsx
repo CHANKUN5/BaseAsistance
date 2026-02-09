@@ -22,12 +22,12 @@ export default function Jornada() {
             if (jornadaActual && jornadaActual.estado === 'activa') {
                 const inicio = new Date(`${jornadaActual.fecha}T${jornadaActual.hora_inicio}`);
                 const ahora = new Date();
-                const diff = ahora - inicio;
-                
+                const diff = Math.max(0, ahora - inicio);
+
                 const horas = Math.floor(diff / (1000 * 60 * 60));
                 const minutos = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const segundos = Math.floor((diff % (1000 * 60)) / 1000);
-                
+
                 setTiempoTranscurrido(
                     `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`
                 );
@@ -62,7 +62,7 @@ export default function Jornada() {
 
     const pausarJornada = async () => {
         if (!jornadaActual) return;
-        
+
         setLoading(true);
         try {
             const { data, error } = await jornadasService.pausarJornada(jornadaActual.id);
@@ -78,16 +78,16 @@ export default function Jornada() {
 
     const finalizarJornada = async () => {
         if (!jornadaActual) return;
-        
+
         setLoading(true);
         try {
             const { data, error } = await jornadasService.finalizarJornada(jornadaActual.id);
             if (error) throw error;
-            
+
             const horas = Math.floor(data.horas_trabajadas);
             const minutos = Math.round((data.horas_trabajadas - horas) * 60);
             alert(`Jornada finalizada. Trabajaste ${horas} horas y ${minutos} minutos.`);
-            
+
             setJornadaActual(data);
         } catch (error) {
             console.error('Error finishing jornada:', error);
@@ -129,14 +129,14 @@ export default function Jornada() {
                                 {getEstadoTexto(jornadaActual?.estado)}
                             </span>
                         </div>
-                        
+
                         {jornadaActual && jornadaActual.estado === 'activa' && (
                             <div className="timer-display">
                                 <div className="timer-value">{tiempoTranscurrido}</div>
                                 <div className="timer-label">Tiempo trabajado</div>
                             </div>
                         )}
-                        
+
                         {jornadaActual && (
                             <div className="jornada-info">
                                 <div className="info-item">
@@ -184,7 +184,7 @@ export default function Jornada() {
                             >
                                 ▶️ Iniciar Jornada
                             </Button>
-                            
+
                             <Button
                                 variant="warning"
                                 size="large"
@@ -195,7 +195,7 @@ export default function Jornada() {
                             >
                                 ⏸️ Pausar Jornada
                             </Button>
-                            
+
                             <Button
                                 variant="danger"
                                 size="large"
