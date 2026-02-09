@@ -19,12 +19,18 @@ export default function Dashboard() {
     const [weeklyData, setWeeklyData] = useState([]);
     const [historyData, setHistoryData] = useState([]);
 
-    // Modal State
     const [modalConfig, setModalConfig] = useState({
         isOpen: false,
         title: '',
         content: null,
         footer: null
+    });
+
+    const [kpis, setKpis] = useState({
+        totalHoras: '0h 0m',
+        actividad: '0%',
+        mediaDiaria: '0h 0m',
+        diasTrabajados: 0
     });
 
     useEffect(() => {
@@ -64,47 +70,73 @@ export default function Dashboard() {
             // 1. Set History Table Data
             setHistoryData(data.slice(0, 5));
 
-            // 2. Process Weekly Data
+            // 2. Process Rolling 7-Day Weekly Data
             const today = new Date();
-            const startOfWeek = new Date(today);
-            const day = startOfWeek.getDay() || 7;
-            if (day !== 1) startOfWeek.setHours(-24 * (day - 1));
-            else startOfWeek.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
 
-            const weekDays = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab', 'Dom'];
-            const dayMap = weekDays.reduce((acc, d) => ({ ...acc, [d]: 0 }), {});
+            // Generate list of last 7 days (including today)
+            const rollingDays = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(today);
+                d.setDate(today.getDate() - i);
+                rollingDays.push(d);
+            }
+
+            const dayNames = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
+            const labels = rollingDays.map(d => dayNames[d.getDay()]);
+
+            // Map labels to data
+            const dayMap = rollingDays.reduce((acc, d) => {
+                const dateStr = d.toISOString().split('T')[0];
+                acc[dateStr] = 0;
+                return acc;
+            }, {});
+
+            let totalHorasNum = 0;
+            let diasConActividad = 0;
 
             data.forEach(log => {
                 if (!log.fecha) return;
-                // Fix: simple YYYY-MM-DD parsing can lead to UTC offsets. 
-                // Adding T00:00:00 ensures it's parsed as a date start.
                 const logDate = new Date(log.fecha + 'T00:00:00');
+                const logDateStr = logDate.toISOString().split('T')[0];
+                const hours = parseDurationToHours(log.horas_trabajadas);
 
-                // Allow data from current week (Monday-Sunday)
-                // Using simple date creation to avoid timezone issues with exact TS comparison
-                const logDateStart = new Date(logDate);
-                logDateStart.setHours(0, 0, 0, 0);
-
-                const startOfWeekStart = new Date(startOfWeek);
-                startOfWeekStart.setHours(0, 0, 0, 0);
-
-                if (logDateStart >= startOfWeekStart) {
-                    const dayIndex = logDate.getDay();
-                    const dayName = dayIndex === 0 ? 'Dom' : weekDays[dayIndex - 1];
-                    const hours = parseDurationToHours(log.horas_trabajadas);
-                    dayMap[dayName] += hours;
+                // For the rolling chart
+                if (dayMap[logDateStr] !== undefined) {
+                    dayMap[logDateStr] += hours;
                 }
+
+                // Global metrics calculation (all history or can be restricted to month)
+                totalHorasNum += hours;
             });
 
-            const processedData = weekDays.map(d => ({
-                name: d,
-                horas: parseFloat(dayMap[d].toFixed(1))
-            }));
+            // Count days with activity from history
+            const uniqueDays = new Set(data.map(log => log.fecha));
+            diasConActividad = uniqueDays.size;
+
+            const processedData = rollingDays.map(d => {
+                const dateStr = d.toISOString().split('T')[0];
+                return {
+                    name: dayNames[d.getDay()],
+                    horas: parseFloat(dayMap[dateStr].toFixed(1))
+                };
+            });
 
             setWeeklyData(processedData);
+
+            // 3. Update KPIs
+            const avgHours = diasConActividad > 0 ? totalHorasNum / diasConActividad : 0;
+            const activityPercent = Math.min(100, (diasConActividad / 30) * 100); // Activity in last 30 days roughly
+
+            setKpis({
+                totalHoras: `${Math.floor(totalHorasNum)}h ${Math.round((totalHorasNum % 1) * 60)}m`,
+                actividad: `${Math.round(activityPercent)}%`,
+                mediaDiaria: `${Math.floor(avgHours)}h ${Math.round((avgHours % 1) * 60)}m`,
+                diasTrabajados: diasConActividad
+            });
+
         } catch (error) {
             console.error("Error loading dashboard data:", error);
-            // Empty fallback
         }
     };
 
@@ -217,8 +249,8 @@ export default function Dashboard() {
                         </div>
                         <div className="metric-info">
                             <span className="metric-label">Horas Trabajadas</span>
-                            <span className="metric-value">25h 24m</span>
-                            <span className="metric-subtext positive">+5% vs semana pasada</span>
+                            <span className="metric-value">{kpis.totalHoras}</span>
+                            <span className="metric-subtext positive">Total acumulado</span>
                         </div>
                     </Card>
                     <Card className="metric-card">
@@ -227,8 +259,8 @@ export default function Dashboard() {
                         </div>
                         <div className="metric-info">
                             <span className="metric-label">Actividad</span>
-                            <span className="metric-value">85%</span>
-                            <span className="metric-subtext">3 días trabajados</span>
+                            <span className="metric-value">{kpis.actividad}</span>
+                            <span className="metric-subtext">{kpis.diasTrabajados} días trabajados</span>
                         </div>
                     </Card>
                     <Card className="metric-card">
@@ -237,8 +269,8 @@ export default function Dashboard() {
                         </div>
                         <div className="metric-info">
                             <span className="metric-label">Media Diaria</span>
-                            <span className="metric-value">8h 30m</span>
-                            <span className="metric-subtext positive">+10% vs objetivo</span>
+                            <span className="metric-value">{kpis.mediaDiaria}</span>
+                            <span className="metric-subtext positive">Promedio por jornada</span>
                         </div>
                     </Card>
                 </div>
@@ -246,7 +278,7 @@ export default function Dashboard() {
                 {/* Middle: Chart & Control Panel */}
                 <div className="middle-section">
                     <Card className="chart-card-large">
-                        <h3>Horas Semanales</h3>
+                        <h3>Últimos 7 días</h3>
                         <ResponsiveContainer width="100%" height={220}>
                             <BarChart data={weeklyData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
