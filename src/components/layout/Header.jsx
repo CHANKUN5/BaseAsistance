@@ -2,6 +2,14 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import './Header.css';
 
+const MenuIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="4" y1="12" x2="20" y2="12" />
+        <line x1="4" y1="6" x2="20" y2="6" />
+        <line x1="4" y1="18" x2="20" y2="18" />
+    </svg>
+);
+
 function getGreeting() {
     const hour = new Date().getHours();
     if (hour < 12) return 'Buenos días';
@@ -9,7 +17,7 @@ function getGreeting() {
     return 'Buenas noches';
 }
 
-export default function Header() {
+export default function Header({ onMenuClick }) {
     const { user } = useAuth();
     const navigate = useNavigate();
 
@@ -24,6 +32,9 @@ export default function Header() {
     return (
         <header className="header">
             <div className="header__left">
+                <button className="header__menu-toggle" onClick={onMenuClick} aria-label="Abrir menú">
+                    <MenuIcon />
+                </button>
             </div>
 
             <div className="header__right">

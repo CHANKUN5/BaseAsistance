@@ -1,13 +1,19 @@
+import { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import './Layout.css';
 
 export default function Layout({ children, title, subtitle }) {
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+    const closeSidebar = () => setIsSidebarOpen(false);
+
     return (
         <div className="layout">
-            <Sidebar />
+            <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
             <div className="layout__main">
-                <Header />
+                <Header onMenuClick={toggleSidebar} />
                 <main className="layout__content">
                     {(title || subtitle) && (
                         <div className="layout__page-header">
@@ -18,6 +24,7 @@ export default function Layout({ children, title, subtitle }) {
                     {children}
                 </main>
             </div>
+            {isSidebarOpen && <div className="layout__overlay" onClick={closeSidebar}></div>}
         </div>
     );
 }

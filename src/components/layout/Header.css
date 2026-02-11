@@ -95,3 +95,32 @@
         font-size: 14px;
     }
 }
+
+.header__menu-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: none;
+    color: var(--color-neutral-600);
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: background-color 0.2s ease;
+}
+
+.header__menu-toggle:hover {
+    background-color: var(--color-neutral-100);
+}
+
+.header__menu-toggle svg {
+    width: 24px;
+    height: 24px;
+}
+
+@media (max-width: 1024px) {
+    .header__menu-toggle {
+        display: flex;
+    }
+}

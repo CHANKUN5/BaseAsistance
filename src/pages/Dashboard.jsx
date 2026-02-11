@@ -384,7 +384,7 @@ export default function Dashboard() {
                                 {historyData.length > 0 ? (
                                     historyData.map((jornada, index) => (
                                         <tr key={jornada.id || index}>
-                                            <td>
+                                            <td data-label="FECHA">
                                                 <div className="table-date">
                                                     <span className="date-day">
                                                         {new Date(jornada.fecha + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long' })}
@@ -394,13 +394,13 @@ export default function Dashboard() {
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td>{jornada.hora_inicio}</td>
-                                            <td>
+                                            <td data-label="HORA INICIO">{jornada.hora_inicio}</td>
+                                            <td data-label="HORAS">
                                                 <span className="hours-badge">
                                                     {jornada.horas_trabajadas || '--'}
                                                 </span>
                                             </td>
-                                            <td>
+                                            <td data-label="ESTADO">
                                                 <span className={`status-text ${jornada.estado === 'activa' ? 'success' : 'completed'}`}>
                                                     {jornada.estado === 'activa' ? 'EN CURSO' : 'COMPLETADO'}
                                                 </span>

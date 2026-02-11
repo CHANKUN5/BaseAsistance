@@ -40,12 +40,22 @@ export default function Historial() {
         if (!fecha) return '--';
         const dateObj = (fecha instanceof Date) ? fecha : new Date(fecha + 'T00:00:00');
 
-        return dateObj.toLocaleDateString('es-ES', {
+        const options = {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
             day: 'numeric'
-        });
+        };
+        const formatted = dateObj.toLocaleDateString('es-ES', options);
+        // Capitalize each word for extra premium feel as requested in image
+        return formatted.split(' ').map(word => {
+            if (word.length <= 2 && word !== 'de') return word;
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+    };
+
+    const toTitleCase = (str) => {
+        return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
     };
 
     const formatearHora = (hora) => {
@@ -162,6 +172,10 @@ export default function Historial() {
         }
     };
 
+    const closeDetailsModal = () => {
+        setSelectedDay(null);
+    };
+
     if (loading) {
         return (
             <Layout title="Historial">
@@ -238,7 +252,7 @@ export default function Historial() {
                                                 .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                                                 .map((jornada) => (
                                                     <tr key={jornada.id}>
-                                                        <td className="fecha-cell">
+                                                        <td className="fecha-cell" data-label="Fecha">
                                                             <div className="fecha-display">
                                                                 <div className="fecha-principal">
                                                                     {new Date(jornada.fecha + 'T00:00:00').toLocaleDateString('es-ES')}
@@ -248,14 +262,14 @@ export default function Historial() {
                                                                 </div>
                                                             </div>
                                                         </td>
-                                                        <td>{formatearHora(jornada.hora_inicio)}</td>
-                                                        <td>{formatearHora(jornada.hora_fin)}</td>
-                                                        <td className="duracion-cell">
+                                                        <td data-label="Hora Inicio">{formatearHora(jornada.hora_inicio)}</td>
+                                                        <td data-label="Hora Fin">{formatearHora(jornada.hora_fin)}</td>
+                                                        <td className="duracion-cell" data-label="Duración">
                                                             <span className="duracion-badge">
                                                                 {formatearDuracion(jornada.horas_trabajadas)}
                                                             </span>
                                                         </td>
-                                                        <td>
+                                                        <td className="estado-cell" data-label="Estado">
                                                             <span className={`estado-badge estado-badge--${getEstadoBadge(jornada.estado)}`}>
                                                                 {jornada.estado}
                                                             </span>
@@ -300,7 +314,7 @@ export default function Historial() {
                         <Card className="calendar-card">
                             <div className="calendar-header">
                                 <h3>
-                                    {currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+                                    {toTitleCase(currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }))}
                                 </h3>
                                 <div className="calendar-nav">
                                     <button onClick={() => changeMonth(-1)}>&lt;</button>
@@ -308,7 +322,7 @@ export default function Historial() {
                                 </div>
                             </div>
                             <div className="calendar-grid">
-                                {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(day => (
+                                {['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'].map(day => (
                                     <div key={day} className="calendar-day-header">{day}</div>
                                 ))}
                                 {getDaysInMonth(currentDate).map((day, index) => {

@@ -67,7 +67,7 @@ const PROFILE_ITEMS = [
     { to: '/profile', icon: Icons.user, label: 'Mi Perfil' }
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -80,12 +80,19 @@ export default function Sidebar() {
         const result = await logout();
         if (result.success) {
             navigate('/login');
+            if (onClose) onClose();
         }
         setShowLogoutModal(false);
     };
 
+    const handleLinkClick = () => {
+        if (onClose && window.innerWidth <= 1024) {
+            onClose();
+        }
+    };
+
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}>
             <div className="sidebar__logo">
                 <span className="sidebar__logo-icon">{Icons.logo}</span>
                 <span className="sidebar__logo-text">TimeControl</span>
@@ -101,6 +108,7 @@ export default function Sidebar() {
                                 className={({ isActive }) =>
                                     `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
                                 }
+                                onClick={handleLinkClick}
                             >
                                 <span className="sidebar__link-icon">{item.icon}</span>
                                 <span className="sidebar__link-text">{item.label}</span>
@@ -120,6 +128,7 @@ export default function Sidebar() {
                                 className={({ isActive }) =>
                                     `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
                                 }
+                                onClick={handleLinkClick}
                             >
                                 <span className="sidebar__link-icon">{item.icon}</span>
                                 <span className="sidebar__link-text">{item.label}</span>

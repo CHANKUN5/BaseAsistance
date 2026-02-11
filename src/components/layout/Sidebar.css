@@ -121,6 +121,7 @@
     .sidebar {
         transform: translateX(-100%);
         transition: transform var(--transition-slow);
+        box-shadow: var(--shadow-xl);
     }
 
     .sidebar--open {
