@@ -45,19 +45,17 @@ npm run dev
 
 ```mermaid
 erDiagram
-    USERS ||--o{ JORNADAS : "registra"
-    USERS ||--o{ METRICAS_FINANCIERAS : "tiene"
-    
-    USERS {
+    "auth.users" ||--o{ JORNADAS : "registra"
+    "auth.users" ||--o{ METRICAS_FINANCIERAS : "tiene"
+
+    "auth.users" {
         uuid id PK
         string email
-        string password_hash
-        timestamp created_at
     }
 
     JORNADAS {
         uuid id PK
-        uuid user_id FK
+        uuid user_id FK "auth.users(id)"
         date fecha
         time hora_inicio
         time hora_pausa
@@ -68,7 +66,7 @@ erDiagram
 
     METRICAS_FINANCIERAS {
         uuid id PK
-        uuid user_id FK
+        uuid user_id FK "auth.users(id)"
         decimal ingresos_totales
         decimal costos_totales
         int clientes_nuevos
@@ -80,46 +78,38 @@ erDiagram
 
 ### Descripción de Tablas
 
-1. **USERS**: Gestiona la identidad de los usuarios (vinculado a Supabase Auth).
-2. **JORNADAS**: Registra el control diario de asistencia.
-   - `estado`: Puede ser `activa` (en curso), `pausada` (descanso) o `finalizada`.
-   - `horas_trabajadas`: Calculado automáticamente al finalizar la jornada.
+1. **Supabase Auth**: Gestiona la identidad de los usuarios de forma nativa.
+2. **JORNADAS**: Registra el control diario de asistencia vinculado al `auth.uid()`.
+   - `estado`: Puede ser `activa`, `pausada` o `finalizada`.
 3. **METRICAS_FINANCIERAS**: Almacena datos para el dashboard de rendimiento.
-   - Incluye ingresos, costos y análisis de clientes (nuevos vs recurrentes).
 
 ## 📁 Estructura del Proyecto
 
 ```
 src/
 ├── components/
-│   ├── auth/          # Login, Signup, ProtectedRoute
-│   ├── common/        # UI Kit (Button, Input, Card, Modal)
-│   ├── dashboard/     # Widgets de métricas y gráficos
-│   ├── jornadas/      # Controles de asistencia (Iniciar, Pausar, Fin)
-│   └── layout/        # Estructura principal (Header, Sidebar)
-├── context/           # Estado global (AuthContext, JornadaContext)
-├── pages/             # Vistas (Login, Dashboard, Historial)
-├── services/          # Comunicación con Supabase (API)
-├── styles/            # Variables CSS y estilos globales
-└── utils/             # Helpers de fecha y validaciones
+│   ├── dashboard/     # Widgets (StatsCard, Tracker, Charts)
+│   ├── layout/        # Estructura principal (Layout, Sidebar, Header)
+│   └── ui/            # UI Kit Atómico (Button, Card, Input, Table)
+├── context/           # Estado global (AuthContext)
+├── lib/               # Configuración (supabase.js unificado)
+├── pages/             # Vistas (Login, Signup, Dashboard, Jornada, Historial)
+├── services/          # Capa de Servicios (auth, jornadas, metricas)
+└── styles/            # Tailwind CSS y globales
 ```
 
 ## 🛠️ Tecnologías
 
-- **Frontend:** React 18, Vite, React Router
-- **Backend:** Supabase (PostgreSQL, Auth, RLS)
-- **Visualización:** Recharts (Gráficos), Lucide React (Iconos)
-- **Estilos:** CSS Modules / Vanilla CSS moderno
+- **Frontend:** React 18, Vite, Tailwind CSS (Estándar UI)
+- **Backend:** Supabase (Auth, PostgreSQL, Row Level Security)
+- **Componentes:** Diseño Atómico (Atomic Design)
+- **Visualización:** Recharts, Lucide Icons
 
-## 📝 Funcionalidades Principales
+## 📝 Funcionalidades (Sprint 1)
 
-- ✅ **Autenticación:** Registro e inicio de sesión seguro.
-- ✅ **Control de Asistencia:**
-  - Registro de entrada con un click.
-  - Pausa para refrigerio.
-  - Cierre de jornada con cálculo automático de horas.
-- ✅ **Dashboard Financiero:**
-  - Visualización de ingresos vs egresos.
-  - KPI de utilidad neta.
-  - Retención de clientes.
-- ✅ **Historial:** Bitácora completa de jornadas pasadas.
+- ✅ **UI Modernizada:** Interfaz SaaS profesional utilizando Tailwind CSS.
+- ✅ **Componentes Reutilizables:** Librería base de UI para consistencia visual.
+- ✅ **Seguridad RLS:** Protección de datos a nivel de fila (cada usuario solo ve sus datos).
+- ✅ **Cliente Unificado:** Inicialización de Supabase centralizada y robusta.
+- ✅ **Control de Asistencia:** Flujo completo de jornada laboral.
+- ✅ **Dashboard en tiempo real:** Visualización de KPIs financieros.
