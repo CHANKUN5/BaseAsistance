@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Button, Input, Alert } from '../components/common';
-import './Auth.css';
+import { Button, Input, Card, CardContent, CardHeader } from '../components/ui';
 
 export default function Login() {
     const navigate = useNavigate();
@@ -63,65 +62,81 @@ export default function Login() {
     }
 
     return (
-        <div className="auth-page">
-            <div className="auth-container">
-                <div className="auth-header">
-                    <div className="auth-logo">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <circle cx="12" cy="12" r="10" opacity="0.2" />
-                            <circle cx="12" cy="12" r="6" />
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-md">
+                <div className="flex flex-col items-center mb-8">
+                    <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4 text-white shadow-lg shadow-blue-200">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-7 h-7">
+                            <circle cx="12" cy="12" r="10" className="opacity-25" stroke="none" fill="currentColor" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
                         </svg>
-                        <span>Donezo</span>
                     </div>
-                    <h1 className="auth-title">Iniciar Sesión</h1>
-                    <p className="auth-subtitle">Ingresa tus credenciales para continuar</p>
+                    <h1 className="text-2xl font-bold text-slate-900">Bienvenido de nuevo</h1>
+                    <p className="text-slate-500 mt-2">Ingresa tus credenciales para continuar</p>
                 </div>
 
-                {submitError && (
-                    <Alert
-                        type="error"
-                        message={submitError}
-                        onClose={() => setSubmitError('')}
-                    />
-                )}
+                <Card className="shadow-lg border-0 ring-1 ring-slate-900/5">
+                    <CardContent className="p-8">
+                        {submitError && (
+                            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg flex items-start gap-3">
+                                <svg className="w-5 h-5 text-red-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <p className="text-sm text-red-600">{submitError}</p>
+                            </div>
+                        )}
 
-                <form className="auth-form" onSubmit={handleSubmit}>
-                    <Input
-                        label="Email"
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder="tu@email.com"
-                        error={errors.email}
-                        autoComplete="email"
-                        required
-                    />
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div className="space-y-1">
+                                <label className="text-sm font-medium text-slate-700 block">Email</label>
+                                <Input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="ejemplo@correo.com"
+                                    error={errors.email}
+                                    autoComplete="email"
+                                    required
+                                />
+                            </div>
 
-                    <Input
-                        label="Contraseña"
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        placeholder="••••••••"
-                        error={errors.password}
-                        autoComplete="current-password"
-                        required
-                    />
+                            <div className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-sm font-medium text-slate-700 block">Contraseña</label>
+                                    <Link to="/forgot-password" class="text-xs font-medium text-blue-600 hover:text-blue-700">
+                                        ¿Olvidaste tu contraseña?
+                                    </Link>
+                                </div>
+                                <Input
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    error={errors.password}
+                                    autoComplete="current-password"
+                                    required
+                                />
+                            </div>
 
-                    <Button
-                        type="submit"
-                        fullWidth
-                        loading={isSubmitting || loading}
-                    >
-                        Iniciar Sesión
-                    </Button>
-                </form>
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                size="lg"
+                                isLoading={isSubmitting || loading}
+                            >
+                                Iniciar Sesión
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
 
-                <p className="auth-footer">
-                    ¿No tienes cuenta?{' '}
-                    <Link to="/signup" className="auth-link">Regístrate aquí</Link>
+                <p className="text-center mt-8 text-sm text-slate-500">
+                    ¿No tienes una cuenta?{' '}
+                    <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                        Regístrate gratis
+                    </Link>
                 </p>
             </div>
         </div>

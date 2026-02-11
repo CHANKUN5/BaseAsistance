@@ -1,34 +1,25 @@
-/**
- * TimeTracker Component
- * Timer widget for tracking work time (based on demo.png)
- */
-
 import { useState, useEffect, useCallback } from 'react';
-import Card from '../common/Card';
-import './TimeTracker.css';
+import { Card, CardContent, CardHeader } from '../ui';
 
 const PlayIcon = () => (
-    <svg viewBox="0 0 24 24" fill="currentColor">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
         <polygon points="5 3 19 12 5 21 5 3" />
     </svg>
 );
 
 const PauseIcon = () => (
-    <svg viewBox="0 0 24 24" fill="currentColor">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
         <rect x="6" y="4" width="4" height="16" />
         <rect x="14" y="4" width="4" height="16" />
     </svg>
 );
 
 const StopIcon = () => (
-    <svg viewBox="0 0 24 24" fill="currentColor">
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
         <rect x="4" y="4" width="16" height="16" rx="2" />
     </svg>
 );
 
-/**
- * Format seconds to HH:MM:SS
- */
 function formatTime(totalSeconds) {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -80,19 +71,22 @@ export default function TimeTracker({
     }, [onStop, seconds]);
 
     return (
-        <Card className="time-tracker" variant="highlight" padding="medium">
-            <div className="time-tracker__header">
-                <h3 className="time-tracker__title">Time Tracker</h3>
+        <div className="bg-gradient-to-br from-emerald-900 to-emerald-800 rounded-xl overflow-hidden relative shadow-lg h-full flex flex-col items-center justify-center p-8 text-center min-h-[250px]">
+            {/* Background decoration */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+                <div className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(255,255,255,0.2)_0%,transparent_60%)]"></div>
             </div>
 
-            <div className="time-tracker__display">
+            <h3 className="text-white/90 font-medium text-sm mb-6 relative z-10">Time Tracker</h3>
+
+            <div className="text-5xl font-bold text-white mb-8 tracking-wider font-mono tabular-nums relative z-10">
                 {formatTime(seconds)}
             </div>
 
-            <div className="time-tracker__controls">
+            <div className="flex items-center gap-6 relative z-10">
                 {isRunning ? (
                     <button
-                        className="time-tracker__btn time-tracker__btn--pause"
+                        className="w-14 h-14 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-white/50"
                         onClick={handlePause}
                         aria-label="Pausar"
                     >
@@ -100,15 +94,16 @@ export default function TimeTracker({
                     </button>
                 ) : (
                     <button
-                        className="time-tracker__btn time-tracker__btn--play"
+                        className="w-14 h-14 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-white/50"
                         onClick={handleStart}
                         aria-label="Iniciar"
                     >
                         <PlayIcon />
                     </button>
                 )}
+
                 <button
-                    className="time-tracker__btn time-tracker__btn--stop"
+                    className="w-14 h-14 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleStop}
                     aria-label="Detener"
                     disabled={seconds === 0 && !isRunning}
@@ -116,6 +111,6 @@ export default function TimeTracker({
                     <StopIcon />
                 </button>
             </div>
-        </Card>
+        </div>
     );
 }

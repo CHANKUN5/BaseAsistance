@@ -1,6 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 'recharts';
-import Card from '../common/Card';
-import './ProjectAnalytics.css';
+import { Card, CardHeader, CardContent } from '../ui';
 
 const DAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
@@ -20,11 +19,11 @@ export default function ProjectAnalytics({ flujoData, title = 'Flujo de Ingresos
             return DEFAULT_DATA;
         }
 
-        return flujoData.slice(-7).map((item, index) => {
+        return flujoData.slice(-7).map((item) => {
             const date = new Date(item.periodo);
             const dayIndex = (date.getDay() + 6) % 7;
             const isHighlight = item.ingresos === Math.max(...flujoData.slice(-7).map(d => d.ingresos));
-            
+
             return {
                 day: DAYS[dayIndex],
                 value: item.ingresos,
@@ -43,50 +42,50 @@ export default function ProjectAnalytics({ flujoData, title = 'Flujo de Ingresos
     };
 
     return (
-        <Card className="project-analytics" padding="medium">
-            <div className="project-analytics__header">
-                <h3 className="project-analytics__title">{title}</h3>
-                <p className="project-analytics__subtitle">Últimos 7 días</p>
-            </div>
-
-            <div className="project-analytics__chart">
-                <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>
-                        <XAxis
-                            dataKey="day"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: '#8C8C8C', fontSize: 12 }}
-                        />
-                        <YAxis hide />
-                        <Tooltip
-                            cursor={false}
-                            content={({ active, payload }) => {
-                                if (active && payload && payload.length) {
-                                    return (
-                                        <div className="project-analytics__tooltip">
-                                            {formatCurrency(payload[0].value)}
-                                        </div>
-                                    );
-                                }
-                                return null;
-                            }}
-                        />
-                        <Bar
-                            dataKey="value"
-                            radius={[8, 8, 8, 8]}
-                            barSize={40}
-                        >
-                            {data.map((entry, index) => (
-                                <Cell
-                                    key={`cell-${index}`}
-                                    fill={entry.isHighlight ? '#40916C' : '#D8F3DC'}
-                                />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
-            </div>
+        <Card className="h-full">
+            <CardHeader title={title} subtitle="Últimos 7 días" />
+            <CardContent>
+                <div className="w-full h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={data} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
+                            <XAxis
+                                dataKey="day"
+                                axisLine={false}
+                                tickLine={false}
+                                tick={{ fill: '#94a3b8', fontSize: 12 }}
+                                dy={10}
+                            />
+                            <YAxis hide />
+                            <Tooltip
+                                cursor={{ fill: 'transparent' }}
+                                content={({ active, payload }) => {
+                                    if (active && payload && payload.length) {
+                                        return (
+                                            <div className="bg-slate-900 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg">
+                                                {formatCurrency(payload[0].value)}
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                }}
+                            />
+                            <Bar
+                                dataKey="value"
+                                radius={[6, 6, 6, 6]}
+                                barSize={40}
+                            >
+                                {data.map((entry, index) => (
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={entry.isHighlight ? '#059669' : '#d1fae5'}
+                                        className="transition-all duration-300 hover:opacity-80"
+                                    />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            </CardContent>
         </Card>
     );
 }

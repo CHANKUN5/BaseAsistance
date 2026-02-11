@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Layout } from '../components/layout';
-import { Card } from '../components/common';
+import { Card, CardHeader, CardContent, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import * as jornadasService from '../services/jornadasService';
-import './Historial.css';
 
 export default function Historial() {
     const { user } = useAuth();
@@ -48,13 +47,13 @@ export default function Historial() {
         return `${h}h ${m}m`;
     };
 
-    const getEstadoBadge = (estado) => {
+    const getEstadoBadgeColor = (estado) => {
         const colors = {
-            finalizada: 'success',
-            activa: 'primary',
-            pausada: 'warning'
+            finalizada: 'bg-emerald-100 text-emerald-700',
+            activa: 'bg-blue-100 text-blue-700',
+            pausada: 'bg-amber-100 text-amber-700'
         };
-        return colors[estado] || 'neutral';
+        return colors[estado] || 'bg-slate-100 text-slate-700';
     };
 
     const calcularTotalHoras = () => {
@@ -67,105 +66,90 @@ export default function Historial() {
         return calcularTotalHoras() / jornadasFinalizadas.length;
     };
 
-    if (loading) {
-        return (
-            <Layout
-                title="Historial de Jornadas"
-                subtitle="Consulta el registro completo de tus jornadas laborales."
-            >
-                <div className="historial-loading">
-                    <div className="loading-skeleton">
-                        {[...Array(5)].map((_, i) => (
-                            <div key={i} className="skeleton-row">
-                                <div className="skeleton-item skeleton-date"></div>
-                                <div className="skeleton-item skeleton-time"></div>
-                                <div className="skeleton-item skeleton-time"></div>
-                                <div className="skeleton-item skeleton-duration"></div>
-                                <div className="skeleton-item skeleton-status"></div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </Layout>
-        );
-    }
-
     return (
         <Layout
             title="Historial de Jornadas"
             subtitle="Consulta el registro completo de tus jornadas laborales."
         >
-            <div className="historial-page">
-                <div className="historial-stats">
-                    <div className="stats-grid">
-                        <Card className="stat-card">
-                            <div className="stat-value">{jornadas.length}</div>
-                            <div className="stat-label">Jornadas Registradas</div>
-                        </Card>
-                        <Card className="stat-card">
-                            <div className="stat-value">{formatearDuracion(calcularTotalHoras())}</div>
-                            <div className="stat-label">Total Horas Trabajadas</div>
-                        </Card>
-                        <Card className="stat-card">
-                            <div className="stat-value">{formatearDuracion(calcularPromedioDiario())}</div>
-                            <div className="stat-label">Promedio Diario</div>
-                        </Card>
-                    </div>
+            <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <Card>
+                        <CardContent className="p-6 flex flex-col items-center text-center">
+                            <div className="text-3xl font-bold text-slate-900 mb-1">{jornadas.length}</div>
+                            <div className="text-sm font-medium text-slate-500">Jornadas Registradas</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="p-6 flex flex-col items-center text-center">
+                            <div className="text-3xl font-bold text-slate-900 mb-1">{formatearDuracion(calcularTotalHoras())}</div>
+                            <div className="text-sm font-medium text-slate-500">Total Horas Trabajadas</div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="p-6 flex flex-col items-center text-center">
+                            <div className="text-3xl font-bold text-slate-900 mb-1">{formatearDuracion(calcularPromedioDiario())}</div>
+                            <div className="text-sm font-medium text-slate-500">Promedio Diario</div>
+                        </CardContent>
+                    </Card>
                 </div>
 
-                <Card className="historial-table-card">
-                    <div className="table-header">
-                        <h3>Registro de Jornadas</h3>
-                    </div>
-                    
-                    {jornadas.length === 0 ? (
-                        <div className="empty-state">
-                            <p>No hay jornadas registradas aún.</p>
-                            <p>Comienza registrando tu primera jornada en la sección "Jornada".</p>
-                        </div>
-                    ) : (
-                        <div className="historial-table-container">
-                            <table className="historial-table">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Hora Inicio</th>
-                                        <th>Hora Fin</th>
-                                        <th>Duración</th>
-                                        <th>Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                <Card className="overflow-hidden">
+                    <CardHeader title="Registro de Jornadas" />
+                    <CardContent className="p-0">
+                        {loading ? (
+                            <div className="p-8 text-center text-slate-500">Cargando historial...</div>
+                        ) : jornadas.length === 0 ? (
+                            <div className="p-12 text-center">
+                                <span className="block text-4xl mb-3">📅</span>
+                                <h3 className="text-lg font-medium text-slate-900">No hay jornadas registradas</h3>
+                                <p className="text-slate-500 mt-1">Comienza registrando tu primera jornada en la sección "Jornada".</p>
+                            </div>
+                        ) : (
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Fecha</TableHead>
+                                        <TableHead>Hora Inicio</TableHead>
+                                        <TableHead>Hora Fin</TableHead>
+                                        <TableHead>Duración</TableHead>
+                                        <TableHead>Estado</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
                                     {jornadas.map((jornada) => (
-                                        <tr key={jornada.id}>
-                                            <td className="fecha-cell">
-                                                <div className="fecha-display">
-                                                    <div className="fecha-principal">
+                                        <TableRow key={jornada.id}>
+                                            <TableCell>
+                                                <div className="flex flex-col">
+                                                    <span className="font-medium text-slate-900">
                                                         {new Date(jornada.fecha).toLocaleDateString('es-ES')}
-                                                    </div>
-                                                    <div className="fecha-secundaria">
+                                                    </span>
+                                                    <span className="text-xs text-slate-500 capitalize">
                                                         {new Date(jornada.fecha).toLocaleDateString('es-ES', { weekday: 'long' })}
-                                                    </div>
+                                                    </span>
                                                 </div>
-                                            </td>
-                                            <td>{formatearHora(jornada.hora_inicio)}</td>
-                                            <td>{formatearHora(jornada.hora_fin)}</td>
-                                            <td className="duracion-cell">
-                                                <span className="duracion-badge">
+                                            </TableCell>
+                                            <TableCell className="font-mono text-slate-600">
+                                                {formatearHora(jornada.hora_inicio)}
+                                            </TableCell>
+                                            <TableCell className="font-mono text-slate-600">
+                                                {formatearHora(jornada.hora_fin)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className="font-medium text-slate-900">
                                                     {formatearDuracion(jornada.horas_trabajadas)}
                                                 </span>
-                                            </td>
-                                            <td>
-                                                <span className={`estado-badge estado-badge--${getEstadoBadge(jornada.estado)}`}>
+                                            </TableCell>
+                                            <TableCell>
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getEstadoBadgeColor(jornada.estado)}`}>
                                                     {jornada.estado}
                                                 </span>
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+                                        </TableRow>
                                     ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
+                                </TableBody>
+                            </Table>
+                        )}
+                    </CardContent>
                 </Card>
             </div>
         </Layout>

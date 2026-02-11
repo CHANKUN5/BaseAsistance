@@ -1,93 +1,33 @@
-import { supabase, isSupabaseConfigured } from './supabase';
-
-let demoJornadas = [
-    {
-        id: 1,
-        user_id: 'demo-user-id',
-        fecha: '2024-02-05',
-        hora_inicio: '09:00:00',
-        hora_fin: '17:30:00',
-        horas_trabajadas: 8.5,
-        estado: 'finalizada',
-        created_at: '2024-02-05T09:00:00Z'
-    },
-    {
-        id: 2,
-        user_id: 'demo-user-id',
-        fecha: '2024-02-04',
-        hora_inicio: '08:30:00',
-        hora_fin: '16:45:00',
-        horas_trabajadas: 8.25,
-        estado: 'finalizada',
-        created_at: '2024-02-04T08:30:00Z'
-    },
-    {
-        id: 3,
-        user_id: 'demo-user-id',
-        fecha: '2024-02-03',
-        hora_inicio: '09:15:00',
-        hora_fin: '17:00:00',
-        horas_trabajadas: 7.75,
-        estado: 'finalizada',
-        created_at: '2024-02-03T09:15:00Z'
-    }
-];
-
-let jornadaActivaDemo = null;
+import { supabase } from '../lib/supabase';
 
 export async function iniciarJornada(userId) {
-    if (!isSupabaseConfigured()) {
-        const nuevaJornada = {
-            id: Date.now(),
-            user_id: userId,
-            fecha: (() => {
-                const d = new Date();
-                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-            })(),
-            hora_inicio: new Date().toTimeString().split(' ')[0],
-            hora_pausa: null,
-            hora_fin: null,
-            horas_trabajadas: null,
-            estado: 'activa',
-            created_at: new Date().toISOString()
-        };
-
-        jornadaActivaDemo = nuevaJornada;
-        return { data: nuevaJornada, error: null };
-    }
-
     const { data, error } = await supabase
         .from('jornadas')
         .insert([
             {
                 user_id: userId,
-                fecha: (() => {
-                    const d = new Date();
-                    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                })(),
+                fecha: new Date().toISOString().split('T')[0],
                 hora_inicio: new Date().toTimeString().split(' ')[0],
                 estado: 'activa'
             }
         ])
         .select()
-        .single()
+        .single();
+
+    if (error) {
+        console.error('SUPABASE ERROR (iniciarJornada):', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+        });
+        throw error;
+    }
 
     return { data, error };
 }
 
 export async function pausarJornada(jornadaId) {
-    if (!isSupabaseConfigured()) {
-        if (jornadaActivaDemo && jornadaActivaDemo.id === jornadaId) {
-            jornadaActivaDemo = {
-                ...jornadaActivaDemo,
-                estado: 'pausada',
-                hora_pausa: new Date().toTimeString().split(' ')[0]
-            };
-            return { data: jornadaActivaDemo, error: null };
-        }
-        return { data: null, error: { message: 'Jornada no encontrada' } };
-    }
-
     const { data, error } = await supabase
         .from('jornadas')
         .update({
@@ -96,74 +36,65 @@ export async function pausarJornada(jornadaId) {
         })
         .eq('id', jornadaId)
         .select()
-        .single()
+        .single();
+
+    if (error) {
+        console.error('SUPABASE ERROR (pausarJornada):', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+        });
+        throw error;
+    }
 
     return { data, error };
 }
 
 export async function finalizarJornada(jornadaId) {
-    if (!isSupabaseConfigured()) {
-        if (jornadaActivaDemo && jornadaActivaDemo.id === jornadaId) {
-            const inicio = new Date(`${jornadaActivaDemo.fecha}T${jornadaActivaDemo.hora_inicio}`);
-            const fin = new Date();
-            const diff = fin - inicio;
-            const horas = (diff / (1000 * 60 * 60));
-
-            jornadaActivaDemo = {
-                ...jornadaActivaDemo,
-                estado: 'finalizada',
-                hora_fin: fin.toTimeString().split(' ')[0],
-                horas_trabajadas: parseFloat(horas.toFixed(2))
-            };
-
-            demoJornadas.unshift(jornadaActivaDemo);
-            const result = { ...jornadaActivaDemo };
-            jornadaActivaDemo = null;
-
-            return { data: result, error: null };
-        }
-        return { data: null, error: { message: 'Jornada no encontrada' } };
-    }
-
     const horaFin = new Date().toTimeString().split(' ')[0];
 
-    const { data: jornada } = await supabase
+    // Primero obtenemos la jornada para calcular horas
+    const { data: jornada, error: fetchError } = await supabase
         .from('jornadas')
         .select('hora_inicio, fecha')
         .eq('id', jornadaId)
-        .maybeSingle()
+        .maybeSingle();
 
-    if (jornada) {
-        const inicio = new Date(`${jornada.fecha}T${jornada.hora_inicio}`);
-        const fin = new Date();
-        const diff = fin - inicio;
-        const horas = (diff / (1000 * 60 * 60));
-
-        const { data, error } = await supabase
-            .from('jornadas')
-            .update({
-                estado: 'finalizada',
-                hora_fin: horaFin,
-                horas_trabajadas: parseFloat(horas.toFixed(2))
-            })
-            .eq('id', jornadaId)
-            .select()
-            .maybeSingle()
-
-        return { data, error };
+    if (fetchError || !jornada) {
+        throw new Error('Jornada no encontrada');
     }
 
-    return { data: null, error: { message: 'Jornada no encontrada' } };
+    const inicio = new Date(`${jornada.fecha}T${jornada.hora_inicio}`);
+    const fin = new Date();
+    const diff = fin - inicio;
+    const horas = (diff / (1000 * 60 * 60));
+
+    const { data, error } = await supabase
+        .from('jornadas')
+        .update({
+            estado: 'finalizada',
+            hora_fin: horaFin,
+            horas_trabajadas: parseFloat(horas.toFixed(2))
+        })
+        .eq('id', jornadaId)
+        .select()
+        .maybeSingle();
+
+    if (error) {
+        console.error('SUPABASE ERROR (finalizarJornada):', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+        });
+        throw error;
+    }
+
+    return { data, error };
 }
 
 export async function getJornadaActiva(userId) {
-    if (!isSupabaseConfigured()) {
-        return {
-            data: jornadaActivaDemo && jornadaActivaDemo.user_id === userId ? jornadaActivaDemo : null,
-            error: null
-        };
-    }
-
     const { data, error } = await supabase
         .from('jornadas')
         .select('*')
@@ -173,17 +104,14 @@ export async function getJornadaActiva(userId) {
         .limit(1)
         .maybeSingle();
 
+    if (error && error.code !== 'PGRST116') { // Ignorar error si no hay datos
+        console.error('Error getting active jornada:', error);
+    }
+
     return { data, error };
 }
 
 export async function getHistorialJornadas(userId, limit = 50) {
-    if (!isSupabaseConfigured()) {
-        return {
-            data: demoJornadas.filter(j => j.user_id === userId).slice(0, limit),
-            error: null
-        };
-    }
-
     const { data, error } = await supabase
         .from('jornadas')
         .select('*')
@@ -191,6 +119,10 @@ export async function getHistorialJornadas(userId, limit = 50) {
         .order('fecha', { ascending: false })
         .order('hora_inicio', { ascending: false })
         .limit(limit);
+
+    if (error) {
+        console.error('Error getting historial:', error);
+    }
 
     return { data, error };
 }

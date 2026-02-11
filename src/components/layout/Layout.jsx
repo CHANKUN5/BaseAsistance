@@ -1,14 +1,13 @@
 import Sidebar from './Sidebar';
 import Header from './Header';
-import './Layout.css';
 
 export default function Layout({ children, title, subtitle }) {
     return (
-        <div className="layout">
+        <div className="flex min-h-screen bg-slate-50">
             <Sidebar />
-            <div className="layout__main">
+            <div className="flex-1 flex flex-col min-h-screen lg:ml-64 transition-all duration-300">
                 <Header title={title} subtitle={subtitle} />
-                <main className="layout__content">
+                <main className="flex-1 p-6 overflow-y-auto">
                     {children}
                 </main>
             </div>

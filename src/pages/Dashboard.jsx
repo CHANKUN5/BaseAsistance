@@ -7,10 +7,9 @@ import {
     ProjectProgress,
     TeamCollaboration
 } from '../components/dashboard';
-import { Button } from '../components/common';
+import { Button, Card, CardContent, CardHeader } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import * as metricasService from '../services/metricasService';
-import './Dashboard.css';
 
 const PROJECTS = [
     { id: 1, name: 'Develop API Endpoints', dueDate: 'Nov 26, 2024', icon: '🔷' },
@@ -21,7 +20,7 @@ const PROJECTS = [
 ];
 
 const PlusIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
         <line x1="12" y1="5" x2="12" y2="19" />
         <line x1="5" y1="12" x2="19" y2="12" />
     </svg>
@@ -38,7 +37,7 @@ export default function Dashboard() {
 
     const loadMetricas = async () => {
         if (!user) return;
-        
+
         setLoading(true);
         try {
             const { data } = await metricasService.getAllMetricas(user.id);
@@ -101,7 +100,7 @@ export default function Dashboard() {
             title="Dashboard"
             subtitle="Plan, prioritize, and accomplish your tasks with ease."
         >
-            <div className="dashboard__actions">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 mb-8">
                 <Button variant="primary" icon={<PlusIcon />}>
                     Add Project
                 </Button>
@@ -110,13 +109,13 @@ export default function Dashboard() {
                 </Button>
             </div>
 
-            <div className="dashboard__stats">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {loading ? (
                     [...Array(4)].map((_, i) => (
-                        <div key={i} className="stats-skeleton">
-                            <div className="skeleton-title"></div>
-                            <div className="skeleton-value"></div>
-                            <div className="skeleton-subtitle"></div>
+                        <div key={i} className="bg-white rounded-xl shadow-sm p-6 flex flex-col gap-3 animate-pulse">
+                            <div className="h-4 bg-slate-200 rounded w-2/3"></div>
+                            <div className="h-8 bg-slate-200 rounded w-4/5"></div>
+                            <div className="h-3 bg-slate-200 rounded w-1/2"></div>
                         </div>
                     ))
                 ) : (
@@ -133,48 +132,55 @@ export default function Dashboard() {
                 )}
             </div>
 
-            <div className="dashboard__grid">
-                <div className="dashboard__column dashboard__column--wide">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <div className="lg:col-span-7 flex flex-col gap-6">
                     <ProjectAnalytics flujoData={metricas?.flujo} />
                     <TeamCollaboration />
                 </div>
 
-                <div className="dashboard__column">
-                    <div className="dashboard__reminders">
-                        <h3 className="dashboard__card-title">Reminders</h3>
-                        <div className="dashboard__reminder-content">
-                            <h4 className="dashboard__meeting-title">Meeting with Arc Company</h4>
-                            <p className="dashboard__meeting-time">Time: 02:00 pm - 04:00 pm</p>
-                            <Button variant="primary" fullWidth>
-                                📹 Start Meeting
-                            </Button>
-                        </div>
-                    </div>
+                <div className="lg:col-span-5 flex flex-col gap-6">
+                    <Card>
+                        <CardContent className="p-6">
+                            <h3 className="text-base font-semibold text-slate-900 mb-4">Reminders</h3>
+                            <div className="text-center py-2">
+                                <h4 className="text-lg font-semibold text-slate-900 mb-1">Meeting with Arc Company</h4>
+                                <p className="text-sm text-slate-500 mb-4">Time: 02:00 pm - 04:00 pm</p>
+                                <Button variant="primary" className="w-full">
+                                    📹 Start Meeting
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
 
                     <ProjectProgress />
                 </div>
+            </div>
 
-                <div className="dashboard__column">
-                    <div className="dashboard__project-list">
-                        <div className="dashboard__project-header">
-                            <h3 className="dashboard__card-title">Project</h3>
-                            <Button variant="secondary" size="small" icon={<PlusIcon />}>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+                <div className="lg:col-span-8">
+                    <Card className="h-full">
+                        <CardHeader title="Project">
+                            <Button variant="secondary" size="sm" icon={<PlusIcon />}>
                                 New
                             </Button>
-                        </div>
-                        <ul className="dashboard__projects">
-                            {PROJECTS.map((project) => (
-                                <li key={project.id} className="dashboard__project-item">
-                                    <span className="dashboard__project-icon">{project.icon}</span>
-                                    <div className="dashboard__project-info">
-                                        <span className="dashboard__project-name">{project.name}</span>
-                                        <span className="dashboard__project-date">Due date: {project.dueDate}</span>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                        </CardHeader>
+                        <CardContent>
+                            <ul className="flex flex-col gap-3">
+                                {PROJECTS.map((project) => (
+                                    <li key={project.id} className="flex items-center gap-3 py-2">
+                                        <span className="text-xl">{project.icon}</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-slate-900">{project.name}</span>
+                                            <span className="text-xs text-slate-500">Due date: {project.dueDate}</span>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </CardContent>
+                    </Card>
+                </div>
 
+                <div className="lg:col-span-4">
                     <TimeTracker />
                 </div>
             </div>

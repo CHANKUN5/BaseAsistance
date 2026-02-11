@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Layout } from '../components/layout';
-import { Button, Card } from '../components/common';
+import { Button, Card, CardContent, CardHeader } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import * as jornadasService from '../services/jornadasService';
-import './Jornada.css';
 
 export default function Jornada() {
     const { user } = useAuth();
@@ -99,10 +98,10 @@ export default function Jornada() {
 
     const getEstadoColor = (estado) => {
         switch (estado) {
-            case 'activa': return 'success';
-            case 'pausada': return 'warning';
-            case 'finalizada': return 'neutral';
-            default: return 'neutral';
+            case 'activa': return 'bg-emerald-100 text-emerald-700';
+            case 'pausada': return 'bg-amber-100 text-amber-700';
+            case 'finalizada': return 'bg-slate-100 text-slate-700';
+            default: return 'bg-slate-100 text-slate-700';
         }
     };
 
@@ -120,95 +119,105 @@ export default function Jornada() {
             title="Control de Jornada"
             subtitle="Registra y controla tus horas de trabajo diarias."
         >
-            <div className="jornada-page">
-                <div className="jornada-status">
-                    <Card className="status-card">
-                        <div className="status-header">
-                            <h3>Estado Actual</h3>
-                            <span className={`status-badge status-badge--${getEstadoColor(jornadaActual?.estado)}`}>
-                                {getEstadoTexto(jornadaActual?.estado)}
-                            </span>
-                        </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                {/* Status Card */}
+                <Card className="h-full">
+                    <CardHeader title="Estado Actual">
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getEstadoColor(jornadaActual?.estado)}`}>
+                            {getEstadoTexto(jornadaActual?.estado)}
+                        </span>
+                    </CardHeader>
 
+                    <CardContent className="flex flex-col items-center justify-center py-8">
                         {jornadaActual && jornadaActual.estado === 'activa' && (
-                            <div className="timer-display">
-                                <div className="timer-value">{tiempoTranscurrido}</div>
-                                <div className="timer-label">Tiempo trabajado</div>
+                            <div className="text-center mb-8">
+                                <div className="text-6xl font-bold text-slate-900 font-mono tracking-wider mb-2">
+                                    {tiempoTranscurrido}
+                                </div>
+                                <div className="text-sm font-medium text-slate-500 uppercase tracking-wide">
+                                    Tiempo trabajado
+                                </div>
                             </div>
                         )}
 
                         {jornadaActual && (
-                            <div className="jornada-info">
-                                <div className="info-item">
-                                    <span className="info-label">Fecha:</span>
-                                    <span className="info-value">{new Date(jornadaActual.fecha).toLocaleDateString()}</span>
+                            <div className="w-full grid grid-cols-2 gap-4 text-sm">
+                                <div className="flex flex-col p-3 bg-slate-50 rounded-lg">
+                                    <span className="text-slate-500 mb-1">Fecha</span>
+                                    <span className="font-medium text-slate-900">{new Date(jornadaActual.fecha).toLocaleDateString()}</span>
                                 </div>
-                                <div className="info-item">
-                                    <span className="info-label">Hora inicio:</span>
-                                    <span className="info-value">{jornadaActual.hora_inicio}</span>
+                                <div className="flex flex-col p-3 bg-slate-50 rounded-lg">
+                                    <span className="text-slate-500 mb-1">Hora inicio</span>
+                                    <span className="font-medium text-slate-900">{jornadaActual.hora_inicio}</span>
                                 </div>
                                 {jornadaActual.hora_pausa && (
-                                    <div className="info-item">
-                                        <span className="info-label">Hora pausa:</span>
-                                        <span className="info-value">{jornadaActual.hora_pausa}</span>
+                                    <div className="flex flex-col p-3 bg-slate-50 rounded-lg">
+                                        <span className="text-slate-500 mb-1">Hora pausa</span>
+                                        <span className="font-medium text-slate-900">{jornadaActual.hora_pausa}</span>
                                     </div>
                                 )}
                                 {jornadaActual.hora_fin && (
-                                    <div className="info-item">
-                                        <span className="info-label">Hora fin:</span>
-                                        <span className="info-value">{jornadaActual.hora_fin}</span>
+                                    <div className="flex flex-col p-3 bg-slate-50 rounded-lg">
+                                        <span className="text-slate-500 mb-1">Hora fin</span>
+                                        <span className="font-medium text-slate-900">{jornadaActual.hora_fin}</span>
                                     </div>
                                 )}
                                 {jornadaActual.horas_trabajadas && (
-                                    <div className="info-item">
-                                        <span className="info-label">Horas trabajadas:</span>
-                                        <span className="info-value">{jornadaActual.horas_trabajadas}h</span>
+                                    <div className="flex flex-col p-3 bg-slate-50 rounded-lg col-span-2">
+                                        <span className="text-slate-500 mb-1">Horas trabajadas</span>
+                                        <span className="font-medium text-slate-900">{jornadaActual.horas_trabajadas}h</span>
                                     </div>
                                 )}
                             </div>
                         )}
-                    </Card>
-                </div>
 
-                <div className="jornada-controls">
-                    <Card className="controls-card">
-                        <h3>Controles</h3>
-                        <div className="control-buttons">
-                            <Button
-                                variant="primary"
-                                size="large"
-                                onClick={iniciarJornada}
-                                disabled={jornadaActual && jornadaActual.estado !== 'finalizada'}
-                                loading={loading}
-                                fullWidth
-                            >
-                                ▶️ Iniciar Jornada
-                            </Button>
+                        {!jornadaActual && (
+                            <div className="text-center text-slate-500 py-10">
+                                <span className="block text-4xl mb-2">😴</span>
+                                <p>No has iniciado jornada hoy.</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
 
-                            <Button
-                                variant="warning"
-                                size="large"
-                                onClick={pausarJornada}
-                                disabled={!jornadaActual || jornadaActual.estado !== 'activa'}
-                                loading={loading}
-                                fullWidth
-                            >
-                                ⏸️ Pausar Jornada
-                            </Button>
+                {/* Controls Card */}
+                <Card className="h-full">
+                    <CardHeader title="Controles" />
+                    <CardContent className="flex flex-col justify-center gap-4 py-8">
+                        <Button
+                            variant="primary"
+                            size="lg"
+                            onClick={iniciarJornada}
+                            disabled={jornadaActual && jornadaActual.estado !== 'finalizada'}
+                            isLoading={loading}
+                            className="w-full py-4 text-lg"
+                        >
+                            ▶️ Iniciar Jornada
+                        </Button>
 
-                            <Button
-                                variant="danger"
-                                size="large"
-                                onClick={finalizarJornada}
-                                disabled={!jornadaActual || jornadaActual.estado === 'finalizada'}
-                                loading={loading}
-                                fullWidth
-                            >
-                                ⏹️ Finalizar Jornada
-                            </Button>
-                        </div>
-                    </Card>
-                </div>
+                        <Button
+                            variant="secondary"
+                            size="lg"
+                            onClick={pausarJornada}
+                            disabled={!jornadaActual || jornadaActual.estado !== 'activa'}
+                            isLoading={loading}
+                            className="w-full py-4 text-lg"
+                        >
+                            ⏸️ Pausar Jornada
+                        </Button>
+
+                        <Button
+                            variant="danger"
+                            size="lg"
+                            onClick={finalizarJornada}
+                            disabled={!jornadaActual || jornadaActual.estado === 'finalizada'}
+                            isLoading={loading}
+                            className="w-full py-4 text-lg"
+                        >
+                            ⏹️ Finalizar Jornada
+                        </Button>
+                    </CardContent>
+                </Card>
             </div>
         </Layout>
     );
