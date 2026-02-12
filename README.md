@@ -20,14 +20,31 @@
 
 ---
 
-## 🏗️ Arquitectura de Datos (ERD)
+## 🧠 Sistema de Skills (RPSoft Standards)
 
-El sistema utiliza una estructura relacional optimizada en PostgreSQL para garantizar la integridad y escalabilidad.
+Este proyecto implementa **AI Skills** para garantizar la excelencia operativa y técnica. Estas reglas son detectadas automáticamente por el asistente de desarrollo.
+
+### 🎨 RPSoft UI — Identidad Visual
+Garantiza un "Vibe" premium y consistente en toda la aplicación.
+- **Tokens**: Uso de acento **Lime (#C5FF00)** y esquinas redondeadas de **12-16px**.
+- **Regla de Oro del Tiempo**: 
+  - **Uso Técnico**: Formato digital `HH:MM:SS` en todas las tablas y listas.
+  - **Uso Ejecutivo**: Formato legible `179h 11m` en dashboards y KPIs superiores.
+- **Componentización**: Se prohíbe el estilo inline; se debe usar el sistema atómico en `src/components/common`.
+
+### 🔐 RPSoft Supabase — Database & Security
+Define cómo interactuamos con la capa de datos de forma segura.
+- **Security First**: RLS (Row Level Security) obligatorio en cada tabla mediante `auth.uid()`.
+- **Arquitectura**: Lógica de base de datos aislada en `src/services/`.
+- **Clean DB**: Nomenclatura plural para tablas y `snake_case` para campos, con timestamps de auditoría.
+
+---
+
+## 🏗️ Arquitectura de Datos (ERD)
 
 ```mermaid
 erDiagram
     USUARIOS ||--o{ JORNADAS : "registra"
-    USUARIOS ||--o{ METRICAS : "genera"
     USUARIOS ||--o{ CLIENTES : "gestiona"
     USUARIOS ||--o{ PROYECTOS : "supervisa"
     USUARIOS ||--o{ TAREAS : "define"
@@ -37,55 +54,6 @@ erDiagram
     
     PROYECTOS ||--o{ JORNADAS : "asociado_a"
     TAREAS ||--o{ JORNADAS : "ejecutada_en"
-
-    USUARIOS {
-        uuid id PK
-        string email
-        timestamp created_at
-    }
-
-    CLIENTES {
-        uuid id PK
-        uuid usuario_id FK
-        string nombre
-        string contacto
-    }
-
-    PROYECTOS {
-        uuid id PK
-        uuid usuario_id FK
-        uuid cliente_id FK
-        string nombre
-        string color
-    }
-
-    TAREAS {
-        uuid id PK
-        uuid usuario_id FK
-        uuid proyecto_id FK
-        string nombre
-    }
-
-    JORNADAS {
-        uuid id PK
-        uuid usuario_id FK
-        uuid proyecto_id FK
-        uuid tarea_id FK
-        date fecha
-        time hora_inicio
-        time hora_fin
-        string horas_trabajadas
-        enum estado "activa, pausada, finalizada"
-    }
-
-    METRICAS {
-        uuid id PK
-        uuid usuario_id FK
-        date fecha
-        numeric total_horas
-        int total_pausas
-        int eficiencia
-    }
 ```
 
 ---
@@ -107,13 +75,10 @@ erDiagram
 
 ```text
 src/
-├── components/
-│   ├── common/        # Componentes UI Atómicos (Button, Modal, Card)
-│   ├── dashboard/     # Widgets de métricas y visualización
-│   └── layout/        # Shell de la aplicación (Sidebar, Header)
+├── components/        # Componentes UI Atómicos (Button, Modal, Card)
 ├── context/           # Gestión de estado global (AuthContext)
-├── pages/             # Vistas: Dashboard, Jornada, Historial, Analytics
-├── services/          # Capa de API/Supabase (Agnóstica a la UI)
+├── pages/             # Vistas principales y lógica de página
+├── services/          # Capa de API/Supabase centralizada
 └── styles/            # Sistema de diseño y tokens visuales
 ```
 
@@ -123,46 +88,17 @@ src/
 
 1. **Clonar e instalar:**
    ```bash
-   git clone <repo-url>
    npm install
    ```
 
 2. **Entorno:**
-   Crea un `.env` con tus claves de Supabase:
-   ```env
-   VITE_SUPABASE_URL=tu_url
-   VITE_SUPABASE_ANON_KEY=tu_key
-   ```
+   Configura el archivo `.env` con `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
 
-3. **Base de Datos:**
-   Ejecuta el script SQL incluido en `database/new_schema.sql` en tu dashboard de Supabase.
-
-4. **Desarrollo:**
+3. **Ejecutar:**
    ```bash
    npm run dev
    ```
 
 ---
 
-## 🔍 Verificación Local (Antes de subir a Vercel)
-
-Para asegurar que la aplicación funcione correctamente en producción, sigue estos pasos:
-
-1. **Construir el proyecto:**
-   ```bash
-   npm run build
-   ```
-   Esto generará la carpeta `dist`. Si hay errores de importación (case-sensitivity), aquí aparecerán.
-
-2. **Previsualizar la versión de producción:**
-   ```bash
-   npm run preview
-   ```
-   Abre el enlace proporcionado (usualmente `http://localhost:4173`). Navega por las rutas y refresca la página para verificar que el `vercel.json` y el enrutamiento SPA funcionen.
-
-3. **Variables de Entorno en Vercel:**
-   Asegúrate de configurar `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` en el dashboard de Vercel.
-
----
-
-> Hecho con ❤️ para una gestión del tiempo impecable.
+> Hecho con ❤️ por RPSoft para una gestión del tiempo impecable.
