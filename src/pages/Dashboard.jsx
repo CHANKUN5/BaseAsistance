@@ -9,7 +9,7 @@ import {
     ReminderCard,
     ProjectList
 } from '../components/dashboard';
-import { Button } from '../ui';
+import { Button } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import * as metricasService from '../services/metricasService';
 
