@@ -42,7 +42,7 @@ export default function ProjectAnalytics({ flujoData, title = 'Flujo de Ingresos
     };
 
     return (
-        <Card className="h-full">
+        <Card variant="glass" className="h-full">
             <CardHeader title={title} subtitle="Últimos 7 días" />
             <CardContent>
                 <div className="w-full h-64">

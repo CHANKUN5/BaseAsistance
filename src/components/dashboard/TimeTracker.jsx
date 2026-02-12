@@ -71,7 +71,7 @@ export default function TimeTracker({
     }, [onStop, seconds]);
 
     return (
-        <div className="bg-gradient-to-br from-emerald-900 to-emerald-800 rounded-xl overflow-hidden relative shadow-lg h-full flex flex-col items-center justify-center p-8 text-center min-h-[250px]">
+        <div className="bg-gradient-to-br from-emerald-900 to-emerald-800 rounded-2xl overflow-hidden relative shadow-lg h-full flex flex-col items-center justify-center p-8 text-center min-h-[250px]">
             {/* Background decoration */}
             <div className="absolute inset-0 opacity-10 pointer-events-none">
                 <div className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(255,255,255,0.2)_0%,transparent_60%)]"></div>
