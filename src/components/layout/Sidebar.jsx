@@ -67,7 +67,7 @@ const PROFILE_ITEMS = [
     { to: '/profile', icon: Icons.user, label: 'Mi Perfil' }
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -82,10 +82,15 @@ export default function Sidebar() {
             navigate('/login');
         }
         setShowLogoutModal(false);
+        onClose?.();
+    };
+
+    const handleLinkClick = () => {
+        onClose?.();
     };
 
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}>
             <div className="sidebar__logo">
                 <span className="sidebar__logo-icon">{Icons.logo}</span>
                 <span className="sidebar__logo-text">TimeControl</span>
@@ -98,6 +103,7 @@ export default function Sidebar() {
                         <li key={item.to}>
                             <NavLink
                                 to={item.to}
+                                onClick={handleLinkClick}
                                 className={({ isActive }) =>
                                     `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
                                 }
@@ -117,6 +123,7 @@ export default function Sidebar() {
                         <li key={item.to}>
                             <NavLink
                                 to={item.to}
+                                onClick={handleLinkClick}
                                 className={({ isActive }) =>
                                     `sidebar__link ${isActive ? 'sidebar__link--active' : ''}`
                                 }

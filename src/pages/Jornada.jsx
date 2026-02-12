@@ -98,7 +98,7 @@ export default function Jornada() {
                         <p>Has finalizado tu jornada laboral con éxito.</p>
                         <div className="finish-stats">
                             <span className="stat-label">Tiempo total:</span>
-                            <span className="stat-value">{data.horas_trabajadas || '00:00:00'}</span>
+                            <span className="stat-value">{formatearDuracion(data.horas_trabajadas)}</span>
                         </div>
                     </div>
                 ),
@@ -135,6 +135,18 @@ export default function Jornada() {
             case 'finalizada': return 'Jornada finalizada';
             default: return 'No hay jornada activa';
         }
+    };
+
+    const formatearDuracion = (duration) => {
+        if (!duration) return '00:00:00';
+        if (typeof duration === 'string' && duration.includes(':')) {
+            const parts = duration.split(':').map(Number);
+            const h = parts[0] || 0;
+            const m = parts[1] || 0;
+            const s = parts[2] || 0;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        return duration;
     };
 
     return (
@@ -191,7 +203,7 @@ export default function Jornada() {
                                 {jornadaActual.horas_trabajadas && (
                                     <div className="info-item">
                                         <span className="info-label">Horas trabajadas:</span>
-                                        <span className="info-value">{jornadaActual.horas_trabajadas}h</span>
+                                        <span className="info-value">{formatearDuracion(jornadaActual.horas_trabajadas)}</span>
                                     </div>
                                 )}
                             </div>

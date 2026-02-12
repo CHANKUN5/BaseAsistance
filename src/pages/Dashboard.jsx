@@ -40,24 +40,59 @@ export default function Dashboard() {
         }
     }, [user]);
 
-    const parseDurationToHours = (durationStr) => {
-        if (!durationStr) return 0;
+    const parseDurationToHours = (durationVal) => {
+        if (!durationVal) return 0;
+        if (typeof durationVal === 'number') return durationVal;
 
-        // Handle "HH:MM:SS"
-        if (durationStr.includes(':')) {
-            const parts = durationStr.split(':');
-            const h = parseInt(parts[0], 10) || 0;
-            const m = parseInt(parts[1], 10) || 0;
-            return h + (m / 60);
+        if (typeof durationVal === 'string') {
+            if (durationVal.includes(':')) {
+                const parts = durationVal.split(':').map(Number);
+                const h = parts[0] || 0;
+                const m = parts[1] || 0;
+                const s = parts[2] || 0;
+                return h + (m / 60) + (s / 3600);
+            }
+            const match = durationVal.match(/(\d+\.?\d*)/);
+            return match ? parseFloat(match[1]) : 0;
         }
-
-        // Handle "X hours"
-        const match = durationStr.match(/(\d+)\s*hours?/);
-        if (match) {
-            return parseInt(match[1], 10);
-        }
-
         return 0;
+    };
+
+    const formatearDuracion = (val) => {
+        if (val === null || val === undefined) return '--';
+        const totalHoras = parseDurationToHours(val);
+
+        const h = Math.floor(totalHoras);
+        const m = Math.floor((totalHoras - h) * 60);
+        const s = Math.floor(((totalHoras - h) * 60 - m) * 60 + 0.1);
+
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    };
+
+    const formatearDuracionKPI = (val) => {
+        if (val === null || val === undefined) return '--';
+        const totalHoras = parseDurationToHours(val);
+
+        const h = Math.floor(totalHoras);
+        const m = Math.floor((totalHoras - h) * 60);
+
+        return `${h}h ${m}m`;
+    };
+
+    const calcularDuracionDinamica = (jornada) => {
+        if (jornada.horas_trabajadas) return jornada.horas_trabajadas;
+        if (jornada.hora_inicio && jornada.hora_fin) {
+            const inicio = new Date(`2000-01-01T${jornada.hora_inicio}`);
+            const fin = new Date(`2000-01-01T${jornada.hora_fin}`);
+            let diff = fin - inicio;
+            if (diff < 0) diff += 24 * 60 * 60 * 1000;
+            const totalSeconds = Math.floor(diff / 1000);
+            const h = Math.floor(totalSeconds / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const s = totalSeconds % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        return null;
     };
 
     const loadDashboardData = async () => {
@@ -67,14 +102,9 @@ export default function Dashboard() {
             if (error) throw error;
             if (!data) return;
 
-            // 1. Set History Table Data
             setHistoryData(data.slice(0, 5));
-
-            // 2. Process Rolling 7-Day Weekly Data
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-
-            // Generate list of last 7 days (including today)
             const rollingDays = [];
             for (let i = 6; i >= 0; i--) {
                 const d = new Date(today);
@@ -84,8 +114,6 @@ export default function Dashboard() {
 
             const dayNames = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab'];
             const labels = rollingDays.map(d => dayNames[d.getDay()]);
-
-            // Map labels to data
             const dayMap = rollingDays.reduce((acc, d) => {
                 const dateStr = d.toISOString().split('T')[0];
                 acc[dateStr] = 0;
@@ -99,18 +127,16 @@ export default function Dashboard() {
                 if (!log.fecha) return;
                 const logDate = new Date(log.fecha + 'T00:00:00');
                 const logDateStr = logDate.toISOString().split('T')[0];
-                const hours = parseDurationToHours(log.horas_trabajadas);
 
-                // For the rolling chart
+                const duracion = calcularDuracionDinamica(log);
+                const hours = parseDurationToHours(duracion);
                 if (dayMap[logDateStr] !== undefined) {
                     dayMap[logDateStr] += hours;
                 }
 
-                // Global metrics calculation (all history or can be restricted to month)
                 totalHorasNum += hours;
             });
 
-            // Count days with activity from history
             const uniqueDays = new Set(data.map(log => log.fecha));
             diasConActividad = uniqueDays.size;
 
@@ -123,15 +149,12 @@ export default function Dashboard() {
             });
 
             setWeeklyData(processedData);
-
-            // 3. Update KPIs
             const avgHours = diasConActividad > 0 ? totalHorasNum / diasConActividad : 0;
-            const activityPercent = Math.min(100, (diasConActividad / 30) * 100); // Activity in last 30 days roughly
-
+            const activityPercent = Math.min(100, (diasConActividad / 30) * 100);
             setKpis({
-                totalHoras: `${Math.floor(totalHorasNum)}h ${Math.round((totalHorasNum % 1) * 60)}m`,
+                totalHoras: formatearDuracionKPI(totalHorasNum),
                 actividad: `${Math.round(activityPercent)}%`,
-                mediaDiaria: `${Math.floor(avgHours)}h ${Math.round((avgHours % 1) * 60)}m`,
+                mediaDiaria: formatearDuracionKPI(avgHours),
                 diasTrabajados: diasConActividad
             });
 
@@ -145,7 +168,6 @@ export default function Dashboard() {
 
         const updateTimer = () => {
             if (jornadaActual && jornadaActual.estado === 'activa') {
-                // Ensure date and time are combined correctly
                 const datePart = jornadaActual.fecha.split('T')[0];
                 const inicioString = `${datePart}T${jornadaActual.hora_inicio}`;
                 const inicio = new Date(inicioString);
@@ -307,7 +329,7 @@ export default function Dashboard() {
                                     onClick={() => handleJornadaAction('iniciar')}
                                     disabled={loading}
                                 >
-                                    <Play size={20} style={{ marginRight: '8px' }} />
+                                    <Play size={20} />
                                     Iniciar Jornada
                                 </button>
                             ) : (
@@ -346,7 +368,7 @@ export default function Dashboard() {
                                         onClick={() => handleJornadaAction('finalizar')}
                                         disabled={loading}
                                     >
-                                        <Square size={20} style={{ marginRight: '8px' }} />
+                                        <Square size={20} />
                                         Finalizar
                                     </button>
                                     {jornadaActual.estado === 'pausada' && (
@@ -354,7 +376,7 @@ export default function Dashboard() {
                                             className="action-btn secondary"
                                             onClick={() => handleJornadaAction('iniciar')}
                                         >
-                                            <Play size={20} style={{ marginRight: '8px' }} />
+                                            <Play size={20} />
                                             Reanudar
                                         </button>
                                     )}
@@ -397,7 +419,7 @@ export default function Dashboard() {
                                             <td>{jornada.hora_inicio}</td>
                                             <td>
                                                 <span className="hours-badge">
-                                                    {jornada.horas_trabajadas || '--'}
+                                                    {formatearDuracion(calcularDuracionDinamica(jornada))}
                                                 </span>
                                             </td>
                                             <td>

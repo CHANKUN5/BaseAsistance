@@ -50,28 +50,35 @@ export async function pausarJornada(jornadaId) {
 
 export async function finalizarJornada(jornadaId) {
     try {
-        // En una app real, el cálculo de horas trabajadas debería ser más robusto (considerando pausas previas).
-        // Aquí simplificamos asumiendo que el frontend o una función de base de datos lo calcula,
-        // o simplemente guardamos la hora fin y dejamos que se calcule después.
+        const { data: currentJornada, error: fetchError } = await supabase
+            .from('jornadas')
+            .select('fecha, hora_inicio')
+            .eq('id', jornadaId)
+            .single();
 
-        // Para este demo, vamos a dejar que el cálculo sea NULL o básico por ahora,
-        // O idealmente, traer la jornada, calcular diff entre inicio y fin (menos pausas si las hubiera).
+        if (fetchError) throw fetchError;
 
         const now = new Date();
         const horaFin = now.toTimeString().split(' ')[0];
 
-        // NOTA: El cálculo de 'horas_trabajadas' aquí es complejo si hay múltiples pausas.
-        // Lo ideal es que al finalizar, se haga un update simple de hora_fin y estado.
-        // El campo 'horas_trabajadas' podría ser calculado en el cliente o vía trigger en DB.
-        // Para no romper la funcionalidad, enviaremos null u omitiremos el campo calculado por ahora
-        // a menos que tengamos la hora de inicio disponible.
+        // Calculate worked time
+        const startDateTime = new Date(`${currentJornada.fecha}T${currentJornada.hora_inicio}`);
+        const diffInMs = now.getTime() - startDateTime.getTime();
+
+        // Convert to HH:MM:SS format
+        const totalSeconds = Math.max(0, Math.floor(diffInMs / 1000));
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
+
+        const horasTrabajadas = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 
         const { data, error } = await supabase
             .from('jornadas')
             .update({
                 estado: 'finalizada',
-                hora_fin: horaFin
-                // horas_trabajadas: ... (se calcularía mejor en backend o con datos completos)
+                hora_fin: horaFin,
+                horas_trabajadas: horasTrabajadas
             })
             .eq('id', jornadaId)
             .select()

@@ -16,6 +16,29 @@
     flex-shrink: 0;
 }
 
+.header__menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: none;
+    border: none;
+    color: #4B5563;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.header__menu-btn:hover {
+    color: #111827;
+}
+
+.header__menu-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
 .header__user-section {
     display: flex;
     align-items: center;
@@ -80,6 +103,12 @@
     display: flex;
     align-items: center;
     gap: var(--space-4);
+}
+
+@media (max-width: 1024px) {
+    .header__menu-btn {
+        display: flex;
+    }
 }
 
 @media (max-width: 768px) {

@@ -13,7 +13,6 @@ export default function Historial() {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDay, setSelectedDay] = useState(null);
 
-    // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
@@ -28,7 +27,7 @@ export default function Historial() {
         try {
             const { data } = await jornadasService.getHistorialJornadas(user.id);
             setJornadas(data || []);
-            setCurrentPage(1); // Reset to first page on reload
+            setCurrentPage(1);
         } catch (error) {
             console.error(error);
         } finally {
@@ -52,28 +51,59 @@ export default function Historial() {
         return hora ? hora.substring(0, 5) : '--:--';
     };
 
-    // Helper to parse "HH:MM:SS" or numbers to float hours
     const parseDurationToHours = (duration) => {
         if (!duration) return 0;
         if (typeof duration === 'number') return duration;
         if (typeof duration === 'string') {
             if (duration.includes(':')) {
-                const [h, m] = duration.split(':').map(Number);
-                return (h || 0) + ((m || 0) / 60);
+                const parts = duration.split(':').map(Number);
+                const h = parts[0] || 0;
+                const m = parts[1] || 0;
+                const s = parts[2] || 0;
+                return h + (m / 60) + (s / 3600);
             }
-            // "8 hours" format logic
-            const match = duration.match(/(\d+)/);
+            const match = duration.match(/(\d+\.?\d*)/);
             return match ? parseFloat(match[1]) : 0;
         }
         return 0;
     };
 
     const formatearDuracion = (val) => {
-        const horas = parseDurationToHours(val);
-        if (!horas && horas !== 0) return '--';
-        const h = Math.floor(horas);
-        const m = Math.round((horas - h) * 60);
+        if (!val && val !== 0 && typeof val !== 'string') return '--';
+        const totalHoras = parseDurationToHours(val);
+
+        const h = Math.floor(totalHoras);
+        const m = Math.floor((totalHoras - h) * 60);
+        const s = Math.floor(((totalHoras - h) * 60 - m) * 60 + 0.1);
+
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    };
+
+    const formatearDuracionKPI = (val) => {
+        if (!val && val !== 0 && typeof val !== 'string') return '--';
+        const totalHoras = parseDurationToHours(val);
+
+        const h = Math.floor(totalHoras);
+        const m = Math.floor((totalHoras - h) * 60);
+
         return `${h}h ${m}m`;
+    };
+
+    const calcularDuracionDinamica = (jornada) => {
+        if (!jornada) return null;
+        if (jornada.horas_trabajadas) return jornada.horas_trabajadas;
+        if (jornada.hora_inicio && jornada.hora_fin) {
+            const inicio = new Date(`2000-01-01T${jornada.hora_inicio}`);
+            const fin = new Date(`2000-01-01T${jornada.hora_fin}`);
+            let diff = fin - inicio;
+            if (diff < 0) diff += 24 * 60 * 60 * 1000;
+            const totalSeconds = Math.floor(diff / 1000);
+            const h = Math.floor(totalSeconds / 3600);
+            const m = Math.floor((totalSeconds % 3600) / 60);
+            const s = totalSeconds % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+        return null;
     };
 
     const getEstadoBadge = (estado) => {
@@ -86,16 +116,20 @@ export default function Historial() {
     };
 
     const calcularTotalHoras = () => {
-        return jornadas.reduce((total, jornada) => total + parseDurationToHours(jornada.horas_trabajadas), 0);
+        return jornadas.reduce((total, jornada) => {
+            const duracion = calcularDuracionDinamica(jornada);
+            if (duracion) {
+                return total + parseDurationToHours(duracion);
+            }
+            return total;
+        }, 0);
     };
 
     const calcularPromedioDiario = () => {
-        const jornadasFinalizadas = jornadas.filter(j => j.horas_trabajadas);
-        if (jornadasFinalizadas.length === 0) return 0; // Avoid division by zero
-        return calcularTotalHoras() / jornadasFinalizadas.length;
+        const jornadasConDuracion = jornadas.filter(j => calcularDuracionDinamica(j));
+        if (jornadasConDuracion.length === 0) return 0;
+        return calcularTotalHoras() / jornadasConDuracion.length;
     };
-
-
 
     const handleExportCSV = () => {
         const headers = ['Fecha', 'Hora Inicio', 'Hora Fin', 'Duración', 'Estado'];
@@ -105,7 +139,7 @@ export default function Historial() {
                 const fecha = new Date(j.fecha + 'T00:00:00').toLocaleDateString('es-ES');
                 const inicio = formatearHora(j.hora_inicio);
                 const fin = formatearHora(j.hora_fin);
-                const duracion = formatearDuracion(j.horas_trabajadas);
+                const duracion = formatearDuracion(calcularDuracionDinamica(j));
                 return `${fecha},${inicio},${fin},${duracion},${j.estado}`;
             })
         ].join('\n');
@@ -143,12 +177,34 @@ export default function Historial() {
 
     const getJornadaForDay = (date) => {
         if (!date) return null;
-        return jornadas.find(j => {
-            const jDate = new Date(j.fecha + 'T00:00:00');
-            return jDate.getDate() === date.getDate() &&
-                jDate.getMonth() === date.getMonth() &&
-                jDate.getFullYear() === date.getFullYear();
-        });
+        const dateStr = date.toISOString().split('T')[0];
+        const dayJornadas = jornadas.filter(j => j.fecha === dateStr);
+
+        if (dayJornadas.length === 0) return null;
+
+        if (dayJornadas.length > 1) {
+            let totalSecs = 0;
+            dayJornadas.forEach(j => {
+                const dur = calcularDuracionDinamica(j);
+                if (dur) {
+                    const parts = dur.split(':').map(Number);
+                    totalSecs += (parts[0] * 3600) + (parts[1] * 60) + (parts[2] || 0);
+                }
+            });
+            const h = Math.floor(totalSecs / 3600);
+            const m = Math.floor((totalSecs % 3600) / 60);
+            const s = totalSecs % 60;
+            return {
+                ...dayJornadas[0],
+                horas_trabajadas: `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`,
+                isMultiple: true
+            };
+        }
+
+        return {
+            ...dayJornadas[0],
+            horas_trabajadas: calcularDuracionDinamica(dayJornadas[0])
+        };
     };
 
     const changeMonth = (offset) => {
@@ -202,11 +258,11 @@ export default function Historial() {
                                     <div className="stat-label">Jornadas Registradas</div>
                                 </Card>
                                 <Card className="stat-card">
-                                    <div className="stat-value">{formatearDuracion(calcularTotalHoras())}</div>
+                                    <div className="stat-value">{formatearDuracionKPI(calcularTotalHoras())}</div>
                                     <div className="stat-label">Total Horas Trabajadas</div>
                                 </Card>
                                 <Card className="stat-card">
-                                    <div className="stat-value">{formatearDuracion(calcularPromedioDiario())}</div>
+                                    <div className="stat-value">{formatearDuracionKPI(calcularPromedioDiario())}</div>
                                     <div className="stat-label">Promedio Diario</div>
                                 </Card>
                             </div>
@@ -252,7 +308,7 @@ export default function Historial() {
                                                         <td>{formatearHora(jornada.hora_fin)}</td>
                                                         <td className="duracion-cell">
                                                             <span className="duracion-badge">
-                                                                {formatearDuracion(jornada.horas_trabajadas)}
+                                                                {formatearDuracion(calcularDuracionDinamica(jornada))}
                                                             </span>
                                                         </td>
                                                         <td>
