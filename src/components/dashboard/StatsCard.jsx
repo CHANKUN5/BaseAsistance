@@ -15,47 +15,52 @@ export default function StatsCard({
     variant = 'default',
     onClick
 }) {
-    // Defines styles based on variant
-    const getVariantStyles = () => {
-        if (variant === 'highlight') {
-            return {
-                card: 'bg-emerald-600 text-white border-none',
-                action: 'bg-white/20 hover:bg-white/30 border-white/10 text-white',
-                subtitle: 'text-emerald-100'
-            };
-        }
-        return {
-            card: 'bg-white text-slate-900',
-            action: 'bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-600',
-            subtitle: 'text-slate-500'
+    const StatsCard = ({ title, value, subtitle, variant = 'default', trend }) => {
+        const variants = {
+            default: 'from-white to-slate-50 border-slate-200',
+            highlight: 'from-blue-600 to-blue-700 text-white border-blue-500 shadow-blue-200',
+            success: 'from-emerald-500 to-emerald-600 text-white border-emerald-400 shadow-emerald-200',
+            danger: 'from-rose-500 to-rose-600 text-white border-rose-400 shadow-rose-200'
         };
-    };
 
-    const styles = getVariantStyles();
+        const isWhite = variant === 'default';
 
-    return (
-        <Card className={`${styles.card} transition-shadow hover:shadow-md cursor-pointer h-full`} onClick={onClick}>
-            <CardContent className="p-5 flex flex-col gap-3 h-full">
-                <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium opacity-90">{title}</span>
-                    <button className={`flex items-center justify-center w-8 h-8 rounded-lg border transition-colors ${styles.action}`} aria-label="Ver detalles">
-                        <ArrowIcon />
-                    </button>
+        return (
+            <div className={`
+            bg-gradient-to-br ${variants[variant] || variants.default} 
+            rounded-2xl p-6 shadow-xl border 
+            transition-all duration-300 hover:scale-[1.02] 
+            flex flex-col gap-4 relative overflow-hidden group
+        `}>
+                {/* Glossy overlay for non-white cards */}
+                {!isWhite && (
+                    <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500"></div>
+                )}
+
+                <div className="flex justify-between items-start relative z-10">
+                    <span className={`text-sm font-semibold uppercase tracking-wider ${isWhite ? 'text-slate-500' : 'text-white/80'}`}>
+                        {title}
+                    </span>
+                    {trend && (
+                        <span className={`
+                        flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold
+                        ${isWhite ? 'bg-slate-100 text-slate-600' : 'bg-white/20 text-white'}
+                    `}>
+                            {trend.icon} {trend.type === 'up' ? '↑' : '↓'}
+                        </span>
+                    )}
                 </div>
 
-                <div className={`font-bold leading-none truncate ${typeof value === 'string' && value.length > 15 ? 'text-xl' : 'text-3xl'}`}>{value}</div>
-
-                {subtitle && (
-                    <div className="flex items-center gap-2 mt-auto pt-1">
-                        {trend && (
-                            <span className={`text-sm flex items-center gap-1 ${trend.type === 'up' ? 'text-emerald-500' : 'text-red-500'} ${variant === 'highlight' ? '!text-white' : ''}`}>
-                                {trend.icon || '📈'}
-                            </span>
-                        )}
-                        <span className={`text-sm ${styles.subtitle}`}>{subtitle}</span>
+                <div className="relative z-10">
+                    <div className={`font-black tracking-tight leading-none truncate ${typeof value === 'string' && value.length > 15 ? 'text-2xl' : 'text-4xl'} ${isWhite ? 'text-slate-900' : 'text-white'}`}>
+                        {value}
                     </div>
-                )}
-            </CardContent>
-        </Card>
-    );
-}
+                    {subtitle && (
+                        <div className={`mt-2 text-sm font-medium ${isWhite ? 'text-slate-400' : 'text-white/70'}`}>
+                            {subtitle}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        );
+    }

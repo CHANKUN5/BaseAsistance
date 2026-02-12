@@ -7,3 +7,5 @@ export { default as ProjectAnalytics } from './ProjectAnalytics';
 export { default as TimeTracker } from './TimeTracker';
 export { default as ProjectProgress } from './ProjectProgress';
 export { default as TeamCollaboration } from './TeamCollaboration';
+export { default as ReminderCard } from './ReminderCard';
+export { default as ProjectList } from './ProjectList';

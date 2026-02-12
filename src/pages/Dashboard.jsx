@@ -5,9 +5,11 @@ import {
     ProjectAnalytics,
     TimeTracker,
     ProjectProgress,
-    TeamCollaboration
+    TeamCollaboration,
+    ReminderCard,
+    ProjectList
 } from '../components/dashboard';
-import { Button, Card, CardContent, CardHeader } from '../components/ui';
+import { Button } from '../ui';
 import { useAuth } from '../context/AuthContext';
 import * as metricasService from '../services/metricasService';
 
@@ -64,7 +66,7 @@ export default function Dashboard() {
                 id: 'ingresos',
                 title: 'Ingresos Totales',
                 value: formatCurrency(metricas.ingresos),
-                subtitle: 'Increased from last month',
+                subtitle: '↑ 12% vs mes anterior',
                 variant: 'highlight',
                 trend: { type: 'up', icon: '📈' }
             },
@@ -72,23 +74,23 @@ export default function Dashboard() {
                 id: 'costos',
                 title: 'Costos Totales',
                 value: formatCurrency(metricas.costos),
-                subtitle: 'Inventory costs',
+                subtitle: 'Bajo presupuesto',
                 variant: 'default',
                 trend: { type: 'down', icon: '📉' }
             },
             {
                 id: 'clientes',
                 title: 'Clientes',
-                value: `${metricas.clientes.nuevos} nuevos / ${metricas.clientes.recurrentes} recurrentes`,
-                subtitle: 'Client distribution',
+                value: `${metricas.clientes.nuevos + metricas.clientes.recurrentes}`,
+                subtitle: `${metricas.clientes.nuevos} nuevos este mes`,
                 variant: 'default',
                 trend: { type: 'up', icon: '👥' }
             },
             {
                 id: 'utilidad',
                 title: 'Utilidad Neta',
-                value: `${formatCurrency(metricas.utilidad.valor)} (${metricas.utilidad.porcentaje.toFixed(1)}%)`,
-                subtitle: 'Net profit margin',
+                value: `${formatCurrency(metricas.utilidad.valor)}`,
+                subtitle: `Margen: ${metricas.utilidad.porcentaje.toFixed(1)}%`,
                 variant: metricas.utilidad.valor > 0 ? 'success' : 'danger',
                 trend: metricas.utilidad.valor > 0 ? { type: 'up', icon: '💰' } : { type: 'down', icon: '📉' }
             }
@@ -97,25 +99,25 @@ export default function Dashboard() {
 
     return (
         <Layout
-            title="Dashboard"
-            subtitle="Plan, prioritize, and accomplish your tasks with ease."
+            title="Dashboard Overview"
+            subtitle="Bienvenido de nuevo. Aquí tienes un resumen de tus operaciones."
         >
             <div className="flex flex-col sm:flex-row justify-end gap-3 mb-8">
-                <Button variant="primary" icon={<PlusIcon />}>
-                    Add Project
+                <Button variant="secondary" className="bg-white border-slate-200">
+                    Exportar Reporte
                 </Button>
-                <Button variant="secondary">
-                    Import Data
+                <Button variant="primary" icon={<PlusIcon />}>
+                    Nuevo Proyecto
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {/* Main Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 {loading ? (
                     [...Array(4)].map((_, i) => (
-                        <div key={i} className="bg-white rounded-xl shadow-sm p-6 flex flex-col gap-3 animate-pulse">
-                            <div className="h-4 bg-slate-200 rounded w-2/3"></div>
-                            <div className="h-8 bg-slate-200 rounded w-4/5"></div>
-                            <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                        <div key={i} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-32 animate-pulse">
+                            <div className="h-4 bg-slate-100 rounded w-1/2 mb-4"></div>
+                            <div className="h-8 bg-slate-100 rounded w-3/4"></div>
                         </div>
                     ))
                 ) : (
@@ -132,56 +134,37 @@ export default function Dashboard() {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div className="lg:col-span-7 flex flex-col gap-6">
-                    <ProjectAnalytics flujoData={metricas?.flujo} />
-                    <TeamCollaboration />
+            {/* Secondary Grid Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                {/* Left Column: Main Content */}
+                <div className="lg:col-span-8 space-y-8 flex flex-col">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 grow">
+                        <div className="md:col-span-1">
+                            <ProjectAnalytics flujoData={metricas?.flujo} />
+                        </div>
+                        <div className="md:col-span-1">
+                            <TeamCollaboration />
+                        </div>
+                    </div>
+
+                    <div className="grow">
+                        <ProjectList projects={PROJECTS} />
+                    </div>
                 </div>
 
-                <div className="lg:col-span-5 flex flex-col gap-6">
-                    <Card>
-                        <CardContent className="p-6">
-                            <h3 className="text-base font-semibold text-slate-900 mb-4">Reminders</h3>
-                            <div className="text-center py-2">
-                                <h4 className="text-lg font-semibold text-slate-900 mb-1">Meeting with Arc Company</h4>
-                                <p className="text-sm text-slate-500 mb-4">Time: 02:00 pm - 04:00 pm</p>
-                                <Button variant="primary" className="w-full">
-                                    📹 Start Meeting
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
+                {/* Right Column: Side Widgets */}
+                <div className="lg:col-span-4 space-y-8 flex flex-col">
+                    <div className="grow">
+                        <TimeTracker />
+                    </div>
 
-                    <ProjectProgress />
-                </div>
-            </div>
+                    <div className="grow">
+                        <ReminderCard />
+                    </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
-                <div className="lg:col-span-8">
-                    <Card className="h-full">
-                        <CardHeader title="Project">
-                            <Button variant="secondary" size="sm" icon={<PlusIcon />}>
-                                New
-                            </Button>
-                        </CardHeader>
-                        <CardContent>
-                            <ul className="flex flex-col gap-3">
-                                {PROJECTS.map((project) => (
-                                    <li key={project.id} className="flex items-center gap-3 py-2">
-                                        <span className="text-xl">{project.icon}</span>
-                                        <div className="flex flex-col">
-                                            <span className="text-sm font-medium text-slate-900">{project.name}</span>
-                                            <span className="text-xs text-slate-500">Due date: {project.dueDate}</span>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                <div className="lg:col-span-4">
-                    <TimeTracker />
+                    <div className="grow">
+                        <ProjectProgress />
+                    </div>
                 </div>
             </div>
         </Layout>

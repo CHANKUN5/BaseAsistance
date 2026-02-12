@@ -1,8 +1,13 @@
 import React from 'react';
 
-const Card = ({ children, className = '' }) => {
+const Card = ({ children, className = '', variant = 'default' }) => {
+  const variants = {
+    default: 'bg-white border-slate-200',
+    glass: 'bg-white/70 backdrop-blur-md border-white/20 shadow-xl'
+  };
+
   return (
-    <div className={`bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden ${className}`}>
+    <div className={`${variants[variant] || variants.default} rounded-xl border overflow-hidden transition-all duration-300 ${className}`}>
       {children}
     </div>
   );
